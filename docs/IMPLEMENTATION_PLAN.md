@@ -218,3 +218,4 @@ DRY_RUN="false"
 4. **Platform Ban or Flagging for Pure AI Content**:
    - *Risk*: Platforms downrank low-effort slideshows.
    - *Mitigation*: Videos are designed with real news source attribution, verified 60-word briefings, human-sounding energetic pacing, dynamic waveforms, and custom branded styling matching NextAI Apps Studio.
+

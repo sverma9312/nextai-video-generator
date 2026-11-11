@@ -20,5 +20,21 @@
     "aishort"
   ],
   "author": "NextAI Apps Studio",
-  "license": "MIT"
+  "license": "MIT",
+  "devDependencies": {
+    "@google/genai": "^3.0.0",
+    "@remotion/bundler": "^4.0.542",
+    "@remotion/cli": "^4.0.542",
+    "@remotion/renderer": "^4.0.542",
+    "@types/node": "^26.6.6",
+    "@types/react": "^19.3.0",
+    "@types/react-dom": "^19.3.0",
+    "dotenv": "^18.0.10",
+    "msedge-tts": "^2.1.1",
+    "react": "^19.3.1",
+    "react-dom": "^19.3.1",
+    "remotion": "^4.0.542",
+    "tsx": "^4.23.15",
+    "typescript": "^7.0.2"
+  }
 }

@@ -152,3 +152,4 @@ flowchart TD
   * `INSTAGRAM_ACCESS_TOKEN` / `INSTAGRAM_ACCOUNT_ID`: Stored in repository secrets.
 * **Failure Handling**:
   * If YouTube or Instagram API fails, the generated video is preserved in GitHub Action artifacts for 7 days with error logs, allowing 1-click manual retry.
+
