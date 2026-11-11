@@ -1,0 +1,13 @@
+node_modules/
+.env
+.env.local
+.env.*.local
+out/
+build/
+dist/
+*.mp4
+*.mp3
+*.wav
+.remotion/
+.DS_Store
+Thumbs.db

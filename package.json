@@ -1,0 +1,24 @@
+{
+  "name": "nextai-video-generator",
+  "version": "0.1.0",
+  "description": "Autonomous vertical explainer video generator consuming daily AI news from AIShort",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "test:feed": "tsx src/feed/selector.ts",
+    "generate:dry-run": "tsx src/cli.ts --dry-run",
+    "generate:latest": "tsx src/cli.ts",
+    "remotion:preview": "remotion preview src/video/Root.tsx"
+  },
+  "keywords": [
+    "remotion",
+    "video-generator",
+    "youtube-shorts",
+    "instagram-reels",
+    "gemini",
+    "edge-tts",
+    "aishort"
+  ],
+  "author": "NextAI Apps Studio",
+  "license": "MIT"
+}
