@@ -1,0 +1,93 @@
+name: Daily Video Generator (Shorts & Reels)
+
+on:
+  schedule:
+    # Runs daily at 09:00 UTC (14:30 IST / 02:00 PST) - peak engagement window
+    - cron: '0 9 * * *'
+  workflow_dispatch:
+    inputs:
+      force:
+        description: 'Force video generation even if story was already posted'
+        required: false
+        type: boolean
+        default: false
+      dry_run:
+        description: 'Run script and audio synthesis without rendering full MP4'
+        required: false
+        type: boolean
+        default: false
+
+permissions:
+  contents: write
+
+jobs:
+  generate-and-publish:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v3
+        with:
+          version: 12
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: 'pnpm'
+
+      - name: Install system dependencies for headless video rendering
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y ffmpeg libnss3 libatk1.0-0 libatk-bridge2.0-0 libcups2 libgbm1 libasound2 fonts-noto-color-emoji
+
+      - name: Install Node dependencies
+        run: pnpm install
+
+      - name: Run Video Generation Pipeline
+        env:
+          GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+          YOUTUBE_CLIENT_ID: ${{ secrets.YOUTUBE_CLIENT_ID }}
+          YOUTUBE_CLIENT_SECRET: ${{ secrets.YOUTUBE_CLIENT_SECRET }}
+          YOUTUBE_REFRESH_TOKEN: ${{ secrets.YOUTUBE_REFRESH_TOKEN }}
+          YOUTUBE_PRIVACY_STATUS: 'public'
+          INSTAGRAM_ACCOUNT_ID: ${{ secrets.INSTAGRAM_ACCOUNT_ID }}
+          INSTAGRAM_ACCESS_TOKEN: ${{ secrets.INSTAGRAM_ACCESS_TOKEN }}
+        run: |
+          FLAGS=""
+          if [ "${{ inputs.force }}" = "true" ]; then
+            FLAGS="$FLAGS --force"
+          fi
+          if [ "${{ inputs.dry_run }}" = "true" ]; then
+            FLAGS="$FLAGS --dry-run"
+          fi
+          pnpm generate:latest $FLAGS
+
+      - name: Upload Rendered Video Artifact
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: daily-vertical-video
+          path: |
+            out/*.mp4
+            build/*_audio.mp3
+            build/*_subtitles.json
+          retention-days: 7
+
+      - name: Commit Updated Posted Archive Ledger
+        run: |
+          git config --local user.email "action@github.com"
+          git config --local user.name "NextAI Autonomous Video Bot"
+          if [[ -n $(git status -s data/posted_archive.json) ]]; then
+            git add data/posted_archive.json
+            git commit -m "chore(archive): record published daily video [skip ci]"
+            git push origin main
+          else
+            echo "No new stories recorded in posted archive."
+          fi
