@@ -78,6 +78,7 @@ jobs:
             out/*.mp4
             build/*_audio.mp3
             build/*_subtitles.json
+          if-no-files-found: ignore
           retention-days: 7
 
       - name: Commit Updated Posted Archive Ledger

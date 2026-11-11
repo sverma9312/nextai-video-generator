@@ -32,3 +32,4 @@ You MUST respond ONLY with a valid JSON object matching this exact schema:
   "hashtags": ["#AI", "#TechNews", "#AIModels", "#Shorts", "#AIShort"]
 }`;
 }
+

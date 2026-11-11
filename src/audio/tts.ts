@@ -87,8 +87,10 @@ export async function synthesizeVoiceover(
   };
 }
 
+import { pathToFileURL } from 'node:url';
+
 // Self-executing test for Phase 3 verification
-if (import.meta.url === `file:///${process.argv[1].replace(/\\/g, '/')}`) {
+if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) {
   (async () => {
     try {
       console.log('🎙️ [Phase 3 Test] Synthesizing neural voice with word-level boundaries...\n');

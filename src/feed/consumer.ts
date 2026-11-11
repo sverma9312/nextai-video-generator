@@ -42,3 +42,4 @@ export async function fetchLatestFeed(url: string = AISHOOT_FEED_URL): Promise<F
     throw new Error(`Error fetching AIShort news feed: ${error.message}`);
   }
 }
+

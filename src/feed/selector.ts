@@ -63,8 +63,10 @@ export async function selectStoryForVideo(options: SelectionOptions = {}): Promi
   return candidates[0];
 }
 
+import { pathToFileURL } from 'node:url';
+
 // Self-executing CLI test for Phase 1 verification
-if (import.meta.url === `file:///${process.argv[1].replace(/\\/g, '/')}`) {
+if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) {
   (async () => {
     try {
       console.log('🔍 [Phase 1 Test] Fetching AIShort live feed and testing story selection...\n');
@@ -84,3 +86,4 @@ if (import.meta.url === `file:///${process.argv[1].replace(/\\/g, '/')}`) {
     }
   })();
 }
+

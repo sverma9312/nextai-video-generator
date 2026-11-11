@@ -48,3 +48,4 @@ export const Waveform: React.FC = () => {
     </div>
   );
 };
+

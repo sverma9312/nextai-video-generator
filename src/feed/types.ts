@@ -51,3 +51,4 @@ export interface SubtitleWord {
   startMs: number;
   endMs: number;
 }
+

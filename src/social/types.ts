@@ -18,3 +18,4 @@ export interface AggregatePublishResult {
   youtube?: PlatformPublishResult;
   instagram?: PlatformPublishResult;
 }
+

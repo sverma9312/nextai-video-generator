@@ -65,8 +65,10 @@ export async function generateVideoScript(card: FeedCard): Promise<VideoScript> 
   }
 }
 
+import { pathToFileURL } from 'node:url';
+
 // Self-executing test for Phase 2 verification
-if (import.meta.url === `file:///${process.argv[1].replace(/\\/g, '/')}`) {
+if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) {
   (async () => {
     try {
       console.log('🤖 [Phase 2 Test] Generating viral video script via Gemini 2.5 Flash...\n');

@@ -42,3 +42,4 @@ export function groupWordsIntoChunks(words: SubtitleWord[], maxWordsPerChunk: nu
 
   return chunks;
 }
+

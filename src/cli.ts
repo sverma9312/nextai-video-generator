@@ -101,10 +101,9 @@ export async function runPipeline(): Promise<void> {
   console.log('====================================================\n');
 }
 
-// Self-executing CLI
-if (import.meta.url === `file:///${process.argv[1].replace(/\\/g, '/')}`) {
-  runPipeline().catch((err) => {
-    console.error('\n❌ Video Pipeline Error:', err.message);
-    process.exit(1);
-  });
-}
+// Execute CLI
+runPipeline().catch((err) => {
+  console.error('\n❌ Video Pipeline Error:', err.message);
+  process.exit(1);
+});
+

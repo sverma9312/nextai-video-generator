@@ -7,3 +7,4 @@ export interface VideoCompositionProps {
   words: SubtitleWord[];
   durationInFrames: number;
 }
+
