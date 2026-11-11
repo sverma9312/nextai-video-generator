@@ -45,7 +45,7 @@ jobs:
       - name: Install system dependencies for headless video rendering
         run: |
           sudo apt-get update
-          sudo apt-get install -y ffmpeg libnss3 libatk1.0-0 libatk-bridge2.0-0 libcups2 libgbm1 libasound2 fonts-noto-color-emoji
+          sudo apt-get install -y ffmpeg fonts-noto-color-emoji
 
       - name: Install Node dependencies
         run: pnpm install
