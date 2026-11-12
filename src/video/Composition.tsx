@@ -3,13 +3,14 @@ import { Audio } from 'remotion';
 import type { VideoCompositionProps } from './types';
 import { Background } from './components/Background';
 import { HeaderPill } from './components/HeaderPill';
-import { HeroVisual } from './components/HeroVisual';
+import { DynamicVisualStage } from './components/DynamicVisualStage';
 import { Waveform } from './components/Waveform';
 import { KineticCaptions } from './components/KineticCaptions';
 import { OutroCard } from './components/OutroCard';
 
 export const MainComposition: React.FC<VideoCompositionProps> = ({
   story,
+  script,
   audioSrc,
   words,
 }) => {
@@ -29,8 +30,8 @@ export const MainComposition: React.FC<VideoCompositionProps> = ({
       {/* 2. Top Header Pill with Animated Mascot */}
       <HeaderPill category={story.category} />
 
-      {/* 3. Hero Visual Image with Ken Burns Pan & Zoom */}
-      <HeroVisual story={story} />
+      {/* 3. Multi-Scene Dynamic Visual Stage (Hook -> Breakdown -> Impact) */}
+      <DynamicVisualStage story={story} script={script} />
 
       {/* 4. Audio Waveform Visualizer */}
       <Waveform />
