@@ -5,6 +5,7 @@ import { generateVideoScript } from './script/generator.js';
 import { synthesizeVoiceover } from './audio/tts.js';
 import { renderVideoToDisk } from './render/renderer.js';
 import { recordPostedStory } from './feed/archive.js';
+import { publishToAllChannels } from './social/publisher.js';
 import type { VideoCompositionProps } from './video/types.js';
 
 export async function runPipeline(): Promise<void> {
@@ -81,7 +82,7 @@ export async function runPipeline(): Promise<void> {
   });
 
   // Step 5: Update Deduplication Ledger
-  console.log('\n📝 [5/5] Recording story in posted archive ledger...');
+  console.log('\n📝 [5/6] Recording story in posted archive ledger...');
   await recordPostedStory({
     storyId: story.id,
     headline: story.headline,
@@ -92,12 +93,27 @@ export async function runPipeline(): Promise<void> {
     postedAt: new Date().toISOString(),
   });
 
+  // Step 6: Autonomous Social Distribution (YouTube & Instagram)
+  console.log('\n🚀 [6/6] Distributing to social platforms...');
+  const publishResults = await publishToAllChannels({
+    videoPath: outVideoPath,
+    title: script.videoTitle,
+    description: script.videoDescription,
+    tags: script.hashtags,
+  });
+
   console.log('\n====================================================');
   console.log('🎉 Video Pipeline Completed Successfully!');
   console.log(`   MP4 Video:   ${outVideoPath}`);
   console.log(`   Title:       ${script.videoTitle}`);
   console.log(`   Description: ${script.videoDescription}`);
   console.log(`   Hashtags:    ${script.hashtags.join(' ')}`);
+  if (publishResults.youtube?.publishedUrl) {
+    console.log(`   YouTube:     ${publishResults.youtube.publishedUrl}`);
+  }
+  if (publishResults.instagram?.id) {
+    console.log(`   Instagram:   Reel ID ${publishResults.instagram.id}`);
+  }
   console.log('====================================================\n');
 }
 

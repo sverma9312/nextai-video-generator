@@ -71,6 +71,7 @@ export const KineticCaptions: React.FC<KineticCaptionsProps> = ({ words }) => {
                   ? '0 0 30px rgba(56, 189, 248, 0.9), 0 0 10px rgba(56, 189, 248, 1)'
                   : '0 4px 14px rgba(0, 0, 0, 0.95)',
                 display: 'inline-block',
+                margin: '0 12px',
               }}
             >
               {w.word}
