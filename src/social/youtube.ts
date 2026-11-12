@@ -5,10 +5,21 @@ import type { SocialPublishRequest, PlatformPublishResult } from './types.js';
 export async function uploadToYouTubeShorts(
   request: SocialPublishRequest
 ): Promise<PlatformPublishResult> {
+  const isPublishEnabled = process.env.ENABLE_YOUTUBE_PUBLISH === 'true';
   const clientId = process.env.YOUTUBE_CLIENT_ID;
   const clientSecret = process.env.YOUTUBE_CLIENT_SECRET;
   const refreshToken = process.env.YOUTUBE_REFRESH_TOKEN;
-  const privacyStatus = process.env.YOUTUBE_PRIVACY_STATUS || 'public';
+  const privacyStatus = process.env.YOUTUBE_PRIVACY_STATUS || 'private';
+
+  if (!isPublishEnabled) {
+    console.log('🛡️ [YouTube Upload] Publishing is PAUSED (ENABLE_YOUTUBE_PUBLISH is not set to "true"). Skipping upload safely.');
+    return {
+      platform: 'youtube',
+      success: false,
+      skipped: true,
+      error: 'Publishing paused by safety flag (ENABLE_YOUTUBE_PUBLISH=false).',
+    };
+  }
 
   if (!clientId || !clientSecret || !refreshToken) {
     console.log('ℹ️ [YouTube Upload] Missing YouTube OAuth2 credentials in .env. Skipping upload.');

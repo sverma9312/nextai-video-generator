@@ -4,8 +4,19 @@ export async function uploadToInstagramReels(
   request: SocialPublishRequest,
   publicHostedVideoUrl?: string
 ): Promise<PlatformPublishResult> {
+  const isPublishEnabled = process.env.ENABLE_INSTAGRAM_PUBLISH === 'true';
   const accountId = process.env.INSTAGRAM_ACCOUNT_ID;
   const accessToken = process.env.INSTAGRAM_ACCESS_TOKEN;
+
+  if (!isPublishEnabled) {
+    console.log('🛡️ [Instagram Upload] Publishing is PAUSED (ENABLE_INSTAGRAM_PUBLISH is not set to "true"). Skipping upload safely.');
+    return {
+      platform: 'instagram',
+      success: false,
+      skipped: true,
+      error: 'Publishing paused by safety flag (ENABLE_INSTAGRAM_PUBLISH=false).',
+    };
+  }
 
   if (!accountId || !accessToken) {
     console.log('ℹ️ [Instagram Upload] Missing INSTAGRAM_ACCOUNT_ID or ACCESS_TOKEN in .env. Skipping upload.');
