@@ -9,7 +9,8 @@
     "generate:dry-run": "tsx src/cli.ts --dry-run",
     "generate:latest": "tsx src/cli.ts",
     "remotion:preview": "remotion preview src/video/Root.tsx",
-    "youtube:auth": "tsx src/social/get-youtube-token.ts"
+    "youtube:auth": "tsx src/social/get-youtube-token.ts",
+    "instagram:verify": "tsx src/social/test-instagram.ts"
   },
   "keywords": [
     "remotion",
