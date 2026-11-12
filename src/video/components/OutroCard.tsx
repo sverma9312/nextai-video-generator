@@ -82,7 +82,7 @@ export const OutroCard: React.FC = () => {
           letterSpacing: '0.04em',
         }}
       >
-        🔗 Link in Pinned Comment & Bio • <span style={{ color: '#38bdf8' }}>aishort.nextai-apps.com</span>
+        🔗 Link in Bio • <span style={{ color: '#38bdf8' }}>aishort.nextai-apps.com</span>
       </span>
     </div>
   );

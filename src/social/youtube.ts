@@ -119,6 +119,39 @@ export async function uploadToYouTubeShorts(
     const publishedUrl = `https://youtube.com/shorts/${videoData.id}`;
     console.log(`🎉 [YouTube Upload] Video successfully published: ${publishedUrl}`);
 
+    // Auto-post top-level comment with app link
+    try {
+      console.log('💬 [YouTube Upload] Posting top-level comment...');
+      const commentRes = await fetch(
+        'https://www.googleapis.com/youtube/v3/commentThreads?part=snippet',
+        {
+          method: 'POST',
+          headers: {
+            Authorization: `Bearer ${access_token}`,
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            snippet: {
+              videoId: videoData.id,
+              topLevelComment: {
+                snippet: {
+                  textOriginal: '📱 Read the full 60-word briefing & sources on AIShort:\n👉 https://aishort.nextai-apps.com/',
+                },
+              },
+            },
+          }),
+        }
+      );
+      if (commentRes.ok) {
+        console.log('✅ [YouTube Upload] Top comment posted successfully.');
+      } else {
+        const commentErr = await commentRes.text();
+        console.warn('⚠️ [YouTube Upload] Could not post comment (non-fatal):', commentErr);
+      }
+    } catch (commentErr: any) {
+      console.warn('⚠️ [YouTube Upload] Could not post comment (non-fatal):', commentErr.message);
+    }
+
     return {
       platform: 'youtube',
       success: true,
