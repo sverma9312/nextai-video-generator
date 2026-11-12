@@ -1,5 +1,23 @@
 [
   {
+    "storyId": "c_97f0acca4dc235e3",
+    "headline": "Anthropic launches Claude Meetings and new productivity tools",
+    "videoTitle": "Claude AI Just Joined Your Office #Shorts",
+    "videoPath": "D:\\CODE\\CurrentWorkspace\\nextai-video-generator\\out\\c_97f0acca4dc235e3.mp4",
+    "audioPath": "D:\\CODE\\CurrentWorkspace\\nextai-video-generator\\build\\c_97f0acca4dc235e3_audio.mp3",
+    "durationSeconds": 31.31,
+    "postedAt": "2026-11-12T19:54:34.369Z"
+  },
+  {
+    "storyId": "c_c49166cb50450fea",
+    "headline": "Google DeepMind introduces Gemini 4 Hydrogen for rapid agentic workflows",
+    "videoTitle": "Google Unveils Gemini 4 Hydrogen! #Shorts",
+    "videoPath": "D:\\CODE\\CurrentWorkspace\\nextai-video-generator\\out\\c_c49166cb50450fea.mp4",
+    "audioPath": "D:\\CODE\\CurrentWorkspace\\nextai-video-generator\\build\\c_c49166cb50450fea_audio.mp3",
+    "durationSeconds": 33.88,
+    "postedAt": "2026-11-12T19:31:48.207Z"
+  },
+  {
     "storyId": "c_e9e5de5aee932606",
     "headline": "AWS introduces UAEF framework for evaluating AI agents",
     "videoTitle": "AWS Standardizes AI Agent Testing #Shorts",

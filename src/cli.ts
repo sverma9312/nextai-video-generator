@@ -12,16 +12,21 @@ export async function runPipeline(): Promise<void> {
   const args = process.argv.slice(2);
   const isDryRun = args.includes('--dry-run');
   const isForce = args.includes('--force');
+  const storyIdIdx = args.indexOf('--story-id');
+  const targetStoryId = storyIdIdx !== -1 && args[storyIdIdx + 1] ? args[storyIdIdx + 1] : undefined;
 
   console.log('====================================================');
   console.log('🚀 NextAI Video Generator — Autonomous Daily Pipeline');
   console.log(`   Mode: ${isDryRun ? 'DRY-RUN (No MP4 Render)' : 'FULL RENDER'}`);
+  if (targetStoryId) {
+    console.log(`   Target Story ID: ${targetStoryId}`);
+  }
   console.log(`   Time: ${new Date().toISOString()}`);
   console.log('====================================================\n');
 
   // Step 1: Select top unposted story from AIShort feed
   console.log('📡 [1/5] Ingesting AIShort feed and selecting story...');
-  const story = await selectStoryForVideo({ forceLatest: isForce });
+  const story = await selectStoryForVideo({ forceLatest: isForce, storyId: targetStoryId });
   console.log(`   Selected: "${story.headline}" [${story.category}]`);
   console.log(`   Source:   ${story.sourceName} (${story.sourceUrl})\n`);
 

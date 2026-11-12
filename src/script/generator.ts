@@ -18,26 +18,31 @@ export async function generateVideoScript(card: FeedCard): Promise<VideoScript> 
   const ai = new GoogleGenAI({ apiKey });
   const prompt = buildScriptPrompt(card);
 
-  const candidateModels = ['gemini-3.5-flash', 'gemini-3.5-flash-lite', 'gemini-3.8-flash'];
+  const candidateModels = ['gemini-3.5-flash', 'gemini-3.5-flash-lite'];
   let lastError: Error | null = null;
   let response: any = null;
 
-  for (const model of candidateModels) {
-    try {
-      response = await ai.models.generateContent({
-        model,
-        contents: prompt,
-        config: {
-          responseMimeType: 'application/json',
-          temperature: 0.7,
-        },
-      });
-      if (response && response.text) {
-        break;
+  for (let attempt = 0; attempt < 3 && !response; attempt++) {
+    for (const model of candidateModels) {
+      try {
+        response = await ai.models.generateContent({
+          model,
+          contents: prompt,
+          config: {
+            responseMimeType: 'application/json',
+            temperature: 0.7,
+          },
+        });
+        if (response && response.text) {
+          break;
+        }
+      } catch (err: any) {
+        console.warn(`[ScriptGenerator] Model ${model} failed (attempt ${attempt + 1}): ${err.message}. Trying next candidate...`);
+        lastError = err;
       }
-    } catch (err: any) {
-      console.warn(`[ScriptGenerator] Model ${model} failed: ${err.message}. Trying next candidate...`);
-      lastError = err;
+    }
+    if (!response && attempt < 2) {
+      await new Promise((r) => setTimeout(r, 1500));
     }
   }
 

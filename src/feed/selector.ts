@@ -4,19 +4,22 @@ import type { FeedCard } from './types.js';
 
 export interface SelectionOptions {
   forceLatest?: boolean;
+  storyId?: string;
   categoryPreference?: string[];
 }
 
 export function scoreCard(card: FeedCard): number {
   let score = 0;
 
-  // Category prioritization
+  // Category prioritization (consumer, products, tools, productivity are high virality)
   const cat = (card.category || '').toLowerCase();
-  if (cat.includes('model') || cat.includes('llm')) {
-    score += 30;
-  } else if (cat.includes('research') || cat.includes('breakthrough')) {
+  const text = (card.headline + ' ' + card.summary).toLowerCase();
+
+  if (cat.includes('product') || text.includes('meeting') || text.includes('office') || text.includes('tool') || text.includes('sheets') || text.includes('workspace')) {
+    score += 35; // Viral consumer & workplace impact
+  } else if (cat.includes('model') || cat.includes('llm')) {
     score += 25;
-  } else if (cat.includes('product') || cat.includes('agent')) {
+  } else if (cat.includes('research') || cat.includes('breakthrough')) {
     score += 20;
   } else {
     score += 10;
@@ -40,6 +43,15 @@ export async function selectStoryForVideo(options: SelectionOptions = {}): Promi
   const cards = await fetchLatestFeed();
   if (cards.length === 0) {
     throw new Error('No valid news cards found in AIShort feed.');
+  }
+
+  // If a specific story ID was requested, return it directly
+  if (options.storyId) {
+    const directMatch = cards.find((c) => c.id === options.storyId);
+    if (directMatch) {
+      return directMatch;
+    }
+    console.warn(`⚠️ Requested story ID "${options.storyId}" not found in feed. Falling back to scoring.`);
   }
 
   const archive = await getPostedArchive();

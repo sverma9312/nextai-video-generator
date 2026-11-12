@@ -11,14 +11,15 @@ Topic Data from Verified Source:
 
 Writing Rules:
 1. Target length: EXACTLY 65 to 75 spoken words total of pure news content (pacing is 140 words/min = ~26-28 seconds). Do not rush or over-condense; explain the full story clearly.
-2. The Hook (0-4 seconds): Bold, disruptive, curiosity-inducing statement. Do NOT start with "Did you know" or "In today's news". Jump straight into the jaw-dropping fact.
+2. The Hook (0-4 seconds): Bold, disruptive, curiosity-inducing statement. Do NOT start with "Did you know" or "In today's news". Jump straight into the jaw-dropping fact that captures anyone scrolling.
 3. The Breakdown & Climax: Provide exactly 3 rich, distinct sentences in "corePoints":
-   - Point 1: What happened and the core technical breakthrough.
-   - Point 2: Concrete capabilities, benchmarks, numbers, or workflow impact.
-   - Point 3: Real-world availability, pricing, or developer implications.
-4. NO Spoken Call-to-Action (CTA): End the script cleanly on the final news conclusion or mind-blowing takeaway. DO NOT include ANY spoken outro, such as "Read the full 60 words", "Read more", "Link in bio", or "Subscribe". The video MUST end immediately on the news ending.
-5. Clean Speech: "fullSpokenText" must be clean English meant to be read aloud by Text-to-Speech. DO NOT include markdown, bullet points, asterisks (*), hashtags (#), emojis, or stage directions like [sound effect] or (laughs).
-6. Title & Hashtags: Provide a viral title (under 60 characters with #Shorts) and 5 trending hashtags (#AI, #TechNews, #AIModels, #Shorts, #AIShort).
+   - Point 1: What just launched and why it matters to everyday people, workers, or tech enthusiasts.
+   - Point 2: Concrete, exciting capabilities and how it transforms daily workflow, productivity, or lifestyle.
+   - Point 3: Real-world availability, rollout details, or the mind-blowing future implication.
+4. Accessibility & Virality: Speak in clear, punchy, everyday language. Avoid dry developer jargon (like token pricing, raw parameters, or obscure API benchmarks) unless translated into plain human benefits. Make it fascinating for general audiences so anyone scrolling will instantly understand, save, and share it with friends or coworkers.
+5. NO Spoken Call-to-Action (CTA): End the script cleanly on the final news conclusion or mind-blowing takeaway. DO NOT include ANY spoken outro, such as "Read the full 60 words", "Read more", "Link in bio", or "Subscribe". The video MUST end immediately on the news ending.
+6. Clean Speech: "fullSpokenText" must be clean English meant to be read aloud by Text-to-Speech. DO NOT include markdown, bullet points, asterisks (*), hashtags (#), emojis, or stage directions like [sound effect] or (laughs).
+7. Title & Hashtags: Provide an irresistible viral title (under 60 characters with #Shorts) and 5 trending hashtags (#AI, #Claude, #TechNews, #Productivity, #Shorts).
 
 You MUST respond ONLY with a valid JSON object matching this exact schema:
 {
