@@ -1,7 +1,13 @@
 import React from 'react';
-import { Composition, registerRoot } from 'remotion';
+import { Composition, Still, registerRoot } from 'remotion';
 import { MainComposition } from './Composition';
 import type { VideoCompositionProps } from './types';
+import {
+  Option1Velocity,
+  Option2Editorial,
+  Option3Prism,
+  Option4Minimalist,
+} from '../branding/Avatars';
 
 const defaultTestProps: VideoCompositionProps = {
   story: {
@@ -54,6 +60,30 @@ export const RemotionRoot: React.FC = () => {
         width={1080}
         height={1920}
         defaultProps={defaultTestProps}
+      />
+      <Still
+        id="AvatarOption1Velocity"
+        component={Option1Velocity}
+        width={1024}
+        height={1024}
+      />
+      <Still
+        id="AvatarOption2Editorial"
+        component={Option2Editorial}
+        width={1024}
+        height={1024}
+      />
+      <Still
+        id="AvatarOption3Prism"
+        component={Option3Prism}
+        width={1024}
+        height={1024}
+      />
+      <Still
+        id="AvatarOption4Minimalist"
+        component={Option4Minimalist}
+        width={1024}
+        height={1024}
       />
     </>
   );
