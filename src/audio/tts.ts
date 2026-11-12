@@ -14,77 +14,88 @@ export interface TTSResult {
 export async function synthesizeVoiceover(
   spokenText: string,
   outAudioPath: string,
-  voiceName: string = 'en-US-ChristopherNeural'
+  voiceName?: string
 ): Promise<TTSResult> {
+  const selectedVoice = voiceName || process.env.VIDEO_VOICE_NAME || 'en-US-AndrewMultilingualNeural';
+  const voiceRate = process.env.VIDEO_VOICE_RATE || '+6%';
+
   const dir = path.dirname(outAudioPath);
   await fsp.mkdir(dir, { recursive: true });
 
-  const tts = new MsEdgeTTS();
-  await tts.setMetadata(voiceName, OUTPUT_FORMAT.AUDIO_24KHZ_96KBITRATE_MONO_MP3, {
-    wordBoundaryEnabled: true,
-  });
+  let lastError: Error | null = null;
 
-  const words: SubtitleWord[] = [];
-  const writeStream = fs.createWriteStream(outAudioPath);
-  const stream = tts.toStream(spokenText);
+  for (let attempt = 1; attempt <= 3; attempt++) {
+    try {
+      const tts = new MsEdgeTTS();
+      await tts.setMetadata(selectedVoice, OUTPUT_FORMAT.AUDIO_24KHZ_96KBITRATE_MONO_MP3, {
+        wordBoundaryEnabled: true,
+      });
 
-  // Collect word boundaries from metadataStream
-  if (stream.metadataStream) {
-    stream.metadataStream.on('data', (chunk: Buffer) => {
-      try {
-        const parsed = JSON.parse(chunk.toString('utf-8'));
-        if (parsed?.Metadata) {
-          for (const item of parsed.Metadata) {
-            if (item.Type === 'WordBoundary' && item.Data?.text?.Text) {
-              const offsetTicks = item.Data.Offset || 0;
-              const durationTicks = item.Data.Duration || 0;
-              words.push({
-                word: item.Data.text.Text.trim(),
-                startMs: Math.round(offsetTicks / 10000),
-                endMs: Math.round((offsetTicks + durationTicks) / 10000),
-              });
+      const words: SubtitleWord[] = [];
+      const writeStream = fs.createWriteStream(outAudioPath);
+      const stream = tts.toStream(spokenText, { rate: voiceRate });
+
+      // Collect word boundaries from metadataStream
+      if (stream.metadataStream) {
+        stream.metadataStream.on('data', (chunk: Buffer) => {
+          try {
+            const parsed = JSON.parse(chunk.toString('utf-8'));
+            if (parsed?.Metadata) {
+              for (const item of parsed.Metadata) {
+                if (item.Type === 'WordBoundary' && item.Data?.text?.Text) {
+                  const offsetTicks = item.Data.Offset || 0;
+                  const durationTicks = item.Data.Duration || 0;
+                  words.push({
+                    word: item.Data.text.Text.trim(),
+                    startMs: Math.round(offsetTicks / 10000),
+                    endMs: Math.round((offsetTicks + durationTicks) / 10000),
+                  });
+                }
+              }
             }
+          } catch {
+            // ignore
           }
-        }
-      } catch {
-        // ignore
+        });
       }
-    });
+
+      // Pipe audio bytes to file
+      stream.audioStream.pipe(writeStream);
+
+      // Wait for audio writing to complete
+      await new Promise<void>((resolve, reject) => {
+        writeStream.on('finish', () => setTimeout(resolve, 80));
+        writeStream.on('error', reject);
+        stream.audioStream.on('error', reject);
+      });
+
+      tts.close();
+
+      // Calculate approximate duration based on last word boundary
+      let durationSeconds = 30;
+      if (words.length > 0) {
+        const lastWord = words[words.length - 1];
+        durationSeconds = Math.max(1, (lastWord.endMs + 1000) / 1000);
+      }
+
+      // Save subtitles JSON alongside audio file
+      const subtitlesPath = outAudioPath.replace(/\.mp3$/i, '_subtitles.json');
+      await fsp.writeFile(subtitlesPath, JSON.stringify(words, null, 2), 'utf-8');
+
+      return {
+        audioPath: outAudioPath,
+        subtitlesPath,
+        durationSeconds: Number(durationSeconds.toFixed(2)),
+        words,
+      };
+    } catch (err: any) {
+      console.warn(`[TTS] Attempt ${attempt}/3 failed: ${err.message}. Retrying...`);
+      lastError = err;
+      await new Promise((r) => setTimeout(r, 1000 * attempt));
+    }
   }
 
-  // Pipe audio bytes to file
-  stream.audioStream.pipe(writeStream);
-
-  // Wait for audio writing to complete (turn.end pushes null to audioStream)
-  await new Promise<void>((resolve, reject) => {
-    writeStream.on('finish', () => {
-      // Give a tiny 50ms tick to ensure last metadata events are processed
-      setTimeout(resolve, 50);
-    });
-    writeStream.on('error', reject);
-    stream.audioStream.on('error', reject);
-  });
-
-  // Close TTS client to release websocket
-  tts.close();
-
-  // Calculate approximate duration based on last word boundary
-  let durationSeconds = 30;
-  if (words.length > 0) {
-    const lastWord = words[words.length - 1];
-    durationSeconds = Math.max(1, (lastWord.endMs + 1000) / 1000); // Add 1s buffer for outro decay
-  }
-
-  // Save subtitles JSON alongside audio file
-  const subtitlesPath = outAudioPath.replace(/\.mp3$/i, '_subtitles.json');
-  await fsp.writeFile(subtitlesPath, JSON.stringify(words, null, 2), 'utf-8');
-
-  return {
-    audioPath: outAudioPath,
-    subtitlesPath,
-    durationSeconds: Number(durationSeconds.toFixed(2)),
-    words,
-  };
+  throw new Error(`TTS synthesis failed after 3 attempts: ${lastError?.message}`);
 }
 
 import { pathToFileURL } from 'node:url';
