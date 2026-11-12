@@ -60,49 +60,30 @@ export const OutroCard: React.FC = () => {
         left: 60,
         right: 60,
         display: 'flex',
-        flexDirection: 'column',
         alignItems: 'center',
-        gap: 16,
-        padding: '28px 32px',
-        borderRadius: 36,
-        backgroundColor: 'rgba(12, 14, 24, 0.9)',
-        backdropFilter: 'blur(24px)',
-        border: '1.5px solid rgba(56, 189, 248, 0.5)',
-        boxShadow: '0 20px 60px rgba(0, 0, 0, 0.8), 0 0 40px rgba(56, 189, 248, 0.3)',
+        justifyContent: 'center',
+        padding: '16px 24px',
+        borderRadius: 30,
+        backgroundColor: 'rgba(15, 18, 28, 0.75)',
+        backdropFilter: 'blur(16px)',
+        border: '1px solid rgba(56, 189, 248, 0.3)',
+        boxShadow: '0 10px 30px rgba(0, 0, 0, 0.6)',
         transform: `scale(${entrance})`,
         opacity,
         zIndex: 95,
       }}
     >
-      <div
+      <span
         style={{
-          color: '#ffffff',
-          fontSize: 28,
-          fontWeight: 800,
-          textAlign: 'center',
-          fontFamily: 'system-ui, -apple-system, sans-serif',
-        }}
-      >
-        Read the 60-Word Briefing on <span style={{ color: '#38bdf8' }}>AIShort</span>
-      </div>
-
-      <div
-        style={{
-          display: 'flex',
-          alignItems: 'center',
-          gap: 12,
-          padding: '12px 28px',
-          borderRadius: 24,
-          background: 'linear-gradient(90deg, #38bdf8, #818cf8)',
-          color: '#07080d',
+          color: '#e2e8f0',
           fontSize: 22,
-          fontWeight: 800,
+          fontWeight: 700,
           fontFamily: 'system-ui, -apple-system, sans-serif',
-          boxShadow: '0 4px 20px rgba(56, 189, 248, 0.5)',
+          letterSpacing: '0.04em',
         }}
       >
-        aishort.nextai-apps.com • Link in Bio →
-      </div>
+        🔗 Link in Pinned Comment & Bio • <span style={{ color: '#38bdf8' }}>aishort.nextai-apps.com</span>
+      </span>
     </div>
   );
 };

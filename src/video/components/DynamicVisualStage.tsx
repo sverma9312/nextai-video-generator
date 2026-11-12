@@ -1,6 +1,7 @@
 import React from 'react';
 import { Img, interpolate, spring, useCurrentFrame, useVideoConfig } from 'remotion';
 import type { FeedCard, VideoScript } from '../../feed/types';
+import { AISHORT_APP_ICON } from './assets';
 
 interface DynamicVisualStageProps {
   story: FeedCard;
@@ -39,14 +40,6 @@ export const DynamicVisualStage: React.FC<DynamicVisualStageProps> = ({ story, s
     config: { damping: 14, mass: 0.8 },
   });
 
-  // Smooth continuous Ken Burns pan & zoom
-  const s1Scale = interpolate(frame, [0, scene1End], [1.0, 1.12], {
-    extrapolateRight: 'clamp',
-  });
-  const s1PanX = interpolate(frame, [0, scene1End], [0, -20], {
-    extrapolateRight: 'clamp',
-  });
-
   // Scene 1 exit animation
   const s1ExitProgress = interpolate(frame, [scene1End - 15, scene1End], [1, 0], {
     extrapolateLeft: 'clamp',
@@ -79,6 +72,16 @@ export const DynamicVisualStage: React.FC<DynamicVisualStageProps> = ({ story, s
   const s3ExitProgress = interpolate(frame, [outroStart - 15, outroStart], [1, 0], {
     extrapolateLeft: 'clamp',
     extrapolateRight: 'clamp',
+  });
+
+  // -------------------------------------------------------------
+  // ANIMATIONS FOR SCENE 4 (AISHORT APP LOGO FINALE)
+  // -------------------------------------------------------------
+  const s4RelativeFrame = Math.max(0, frame - outroStart);
+  const s4Entrance = spring({
+    frame: s4RelativeFrame,
+    fps,
+    config: { damping: 14, mass: 0.85 },
   });
 
   // Active point text
@@ -186,23 +189,29 @@ export const DynamicVisualStage: React.FC<DynamicVisualStageProps> = ({ story, s
               boxShadow: '0 25px 60px rgba(0, 0, 0, 0.8), 0 0 40px rgba(56, 189, 248, 0.2)',
             }}
           >
-            {/* Main Photo with Ken Burns pan/zoom */}
+            {/* Ambient Blurred Background (fills canvas nicely without black voids) */}
             <Img
               src={story.imageUrl}
               style={{
-                width: '100%',
-                height: '100%',
+                position: 'absolute',
+                inset: -20,
+                width: 'calc(100% + 40px)',
+                height: 'calc(100% + 40px)',
                 objectFit: 'cover',
-                transform: `scale(${s1Scale}) translateX(${s1PanX}px)`,
+                filter: 'blur(35px) brightness(0.35)',
+                opacity: 0.7,
               }}
             />
 
-            {/* Gradient shadow for text contrast */}
-            <div
+            {/* Crisp Foreground Photo (100% visible, never cut off or cropped) */}
+            <Img
+              src={story.imageUrl}
               style={{
-                position: 'absolute',
-                inset: 0,
-                background: 'linear-gradient(180deg, rgba(0,0,0,0.15) 0%, rgba(0,0,0,0.65) 100%)',
+                position: 'relative',
+                width: '100%',
+                height: '100%',
+                objectFit: 'contain',
+                zIndex: 10,
               }}
             />
 
@@ -216,6 +225,7 @@ export const DynamicVisualStage: React.FC<DynamicVisualStageProps> = ({ story, s
                 height: 24,
                 borderTop: '2.5px solid #38bdf8',
                 borderLeft: '2.5px solid #38bdf8',
+                zIndex: 25,
               }}
             />
             <div
@@ -227,6 +237,7 @@ export const DynamicVisualStage: React.FC<DynamicVisualStageProps> = ({ story, s
                 height: 24,
                 borderTop: '2.5px solid #38bdf8',
                 borderRight: '2.5px solid #38bdf8',
+                zIndex: 25,
               }}
             />
             <div
@@ -238,6 +249,7 @@ export const DynamicVisualStage: React.FC<DynamicVisualStageProps> = ({ story, s
                 height: 24,
                 borderBottom: '2.5px solid #38bdf8',
                 borderLeft: '2.5px solid #38bdf8',
+                zIndex: 25,
               }}
             />
             <div
@@ -249,6 +261,7 @@ export const DynamicVisualStage: React.FC<DynamicVisualStageProps> = ({ story, s
                 height: 24,
                 borderBottom: '2.5px solid #38bdf8',
                 borderRight: '2.5px solid #38bdf8',
+                zIndex: 25,
               }}
             />
 
@@ -270,6 +283,7 @@ export const DynamicVisualStage: React.FC<DynamicVisualStageProps> = ({ story, s
                 fontWeight: 800,
                 letterSpacing: '0.12em',
                 boxShadow: '0 0 15px rgba(239, 68, 68, 0.6)',
+                zIndex: 25,
               }}
             >
               <span
@@ -297,6 +311,7 @@ export const DynamicVisualStage: React.FC<DynamicVisualStageProps> = ({ story, s
                 color: '#e2e8f0',
                 fontSize: 18,
                 fontWeight: 600,
+                zIndex: 25,
               }}
             >
               Source: <span style={{ color: '#38bdf8', fontWeight: 700 }}>{story.sourceName}</span>
@@ -619,18 +634,108 @@ export const DynamicVisualStage: React.FC<DynamicVisualStageProps> = ({ story, s
       )}
 
       {/* ========================================================= */}
-      {/* SCENE 4: OUTRO HANDOFF (smooth placeholder for OutroCard)  */}
+      {/* SCENE 4: AIShort OFFICIAL APP LOGO FINALE                */}
       {/* ========================================================= */}
       {currentScene === 4 && (
         <div
           style={{
+            position: 'relative',
+            width: 960,
+            height: 680,
+            borderRadius: 36,
+            backgroundColor: '#0c0e18',
+            border: '2px solid rgba(56, 189, 248, 0.4)',
+            boxShadow: '0 30px 70px rgba(0, 0, 0, 0.8), 0 0 50px rgba(56, 189, 248, 0.25)',
+            padding: '48px',
             display: 'flex',
             flexDirection: 'column',
             alignItems: 'center',
             justifyContent: 'center',
-            height: '100%',
+            gap: 28,
+            boxSizing: 'border-box',
+            transform: `scale(${s4Entrance})`,
+            overflow: 'hidden',
           }}
-        />
+        >
+          {/* Subtle radial ambient glow */}
+          <div
+            style={{
+              position: 'absolute',
+              width: 500,
+              height: 500,
+              borderRadius: '50%',
+              background: 'radial-gradient(circle, rgba(56, 189, 248, 0.2) 0%, transparent 70%)',
+              filter: 'blur(50px)',
+            }}
+          />
+
+          {/* Official AIShort App Logo Icon */}
+          <div
+            style={{
+              width: 190,
+              height: 190,
+              borderRadius: 44,
+              overflow: 'hidden',
+              boxShadow: '0 20px 50px rgba(0, 0, 0, 0.7), 0 0 35px rgba(56, 189, 248, 0.4)',
+              border: '2px solid rgba(255, 255, 255, 0.15)',
+              position: 'relative',
+              zIndex: 10,
+            }}
+          >
+            <Img
+              src={AISHORT_APP_ICON}
+              style={{
+                width: '100%',
+                height: '100%',
+                objectFit: 'cover',
+              }}
+            />
+          </div>
+
+          {/* App Brand Typography */}
+          <div style={{ textAlign: 'center', position: 'relative', zIndex: 10 }}>
+            <div
+              style={{
+                fontSize: 54,
+                fontWeight: 900,
+                color: '#ffffff',
+                letterSpacing: '-0.02em',
+                marginBottom: 8,
+              }}
+            >
+              AIShort
+            </div>
+            <div
+              style={{
+                fontSize: 22,
+                fontWeight: 700,
+                color: '#94a3b8',
+                letterSpacing: '0.12em',
+                textTransform: 'uppercase',
+              }}
+            >
+              Daily AI News in 60 Words
+            </div>
+          </div>
+
+          {/* Website domain pill */}
+          <div
+            style={{
+              padding: '12px 32px',
+              borderRadius: 9999,
+              backgroundColor: 'rgba(56, 189, 248, 0.12)',
+              border: '1.5px solid rgba(56, 189, 248, 0.4)',
+              color: '#38bdf8',
+              fontSize: 24,
+              fontWeight: 800,
+              letterSpacing: '0.06em',
+              position: 'relative',
+              zIndex: 10,
+            }}
+          >
+            aishort.nextai-apps.com
+          </div>
+        </div>
       )}
     </div>
   );
