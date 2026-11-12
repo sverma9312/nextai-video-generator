@@ -41,7 +41,18 @@ export async function uploadToInstagramReels(
 
   try {
     console.log('📸 [Instagram Upload] Creating Reels container via Meta Graph API...');
-    const caption = `${request.title}\n\n${request.description}\n\n📱 Read the 60-word briefing: https://aishort.nextai-apps.com/\n\n${request.tags.join(' ')}`;
+    const cleanTopic = (request.topic || request.title).replace(/#Shorts/gi, '').trim();
+    const sourceLine = request.sourceName ? `\n🏢 Source: ${request.sourceName}` : '';
+    const caption = [
+      `📰 Topic: ${cleanTopic}${sourceLine}`,
+      '',
+      request.description,
+      '',
+      '📱 Read the verified 60-word briefing on AIShort:',
+      '👉 https://aishort.nextai-apps.com/',
+      '',
+      request.tags.join(' '),
+    ].join('\n');
 
     const containerUrl = `https://graph.facebook.com/v19.0/${accountId}/media`;
     const containerRes = await fetch(containerUrl, {

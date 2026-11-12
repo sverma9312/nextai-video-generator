@@ -54,15 +54,31 @@ export async function uploadToYouTubeShorts(
     const stat = await fsp.stat(request.videoPath);
     const fileSize = stat.size;
 
-    // Ensure title has #Shorts
-    const titleWithShorts = request.title.includes('#Shorts')
-      ? request.title
-      : `${request.title} #Shorts`;
+    // Format Title using the News Topic Headline (max 100 chars for YouTube API)
+    const cleanTopic = (request.topic || request.title).replace(/#Shorts/gi, '').trim();
+    const maxTopicLen = 100 - ' #Shorts'.length;
+    const titleHeadline = cleanTopic.length > maxTopicLen
+      ? `${cleanTopic.slice(0, maxTopicLen - 1)}…`
+      : cleanTopic;
+    const titleWithShorts = `${titleHeadline} #Shorts`;
+
+    // Format Description / Post Caption with Topic, Source, and App link
+    const sourceLine = request.sourceName ? `\n🏢 Source: ${request.sourceName}` : '';
+    const description = [
+      `📰 Topic: ${cleanTopic}${sourceLine}`,
+      '',
+      request.description,
+      '',
+      '📱 Read the verified 60-word briefing on AIShort:',
+      '👉 https://aishort.nextai-apps.com/',
+      '',
+      request.tags.join(' '),
+    ].join('\n');
 
     const metadata = {
       snippet: {
         title: titleWithShorts,
-        description: `${request.description}\n\n📱 Read the verified 60-word briefing: https://aishort.nextai-apps.com/\n\n${request.tags.join(' ')}`,
+        description,
         tags: request.tags.map((t) => t.replace(/^#/, '')),
         categoryId: '28', // Science & Technology
       },
@@ -122,6 +138,7 @@ export async function uploadToYouTubeShorts(
     // Auto-post top-level comment with app link
     try {
       console.log('💬 [YouTube Upload] Posting top-level comment...');
+      const commentText = `📰 Topic: ${cleanTopic}\n\n📱 Read the full 60-word briefing & sources on AIShort:\n👉 https://aishort.nextai-apps.com/`;
       const commentRes = await fetch(
         'https://www.googleapis.com/youtube/v3/commentThreads?part=snippet',
         {
@@ -135,7 +152,7 @@ export async function uploadToYouTubeShorts(
               videoId: videoData.id,
               topLevelComment: {
                 snippet: {
-                  textOriginal: '📱 Read the full 60-word briefing & sources on AIShort:\n👉 https://aishort.nextai-apps.com/',
+                  textOriginal: commentText,
                 },
               },
             },

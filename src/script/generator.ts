@@ -53,8 +53,15 @@ export async function generateVideoScript(card: FeedCard): Promise<VideoScript> 
       throw new Error('Gemini response missing required script fields.');
     }
 
-    // Ensure clean spoken text (strip any accidental asterisks, emojis, or markdown)
+    // Default cta if omitted
+    if (!parsed.cta) {
+      parsed.cta = '';
+    }
+
+    // Ensure clean spoken text: strip accidental spoken CTA phrases, emojis, or markdown
     parsed.fullSpokenText = parsed.fullSpokenText
+      .replace(/read\s+(the\s+)?(full\s+)?60[- ]word(\s+briefing)?.*$/gi, '')
+      .replace(/link\s+in\s+(bio|comments?|pinned\s+comment).*$/gi, '')
       .replace(/[*_#`~[\]]/g, '')
       .replace(/\s+/g, ' ')
       .trim();

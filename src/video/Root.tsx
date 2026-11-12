@@ -26,7 +26,7 @@ const defaultTestProps: VideoCompositionProps = {
       'AlphaGenome 2 predicts exactly how genetic variants alter gene expression inside human cell types.',
       'Trained on over one hundred million single-cell profiles across 68 tissues.',
     ],
-    cta: 'Read the full 60-word briefing on the AIShort app. Link in bio.',
+    cta: '',
     fullSpokenText: 'Google DeepMind just unlocked a massive breakthrough in reading human DNA. Their new model, AlphaGenome 2, predicts exactly how genetic variants alter gene expression inside individual human cell types.',
     videoTitle: "DeepMind's New AI Decodes Human DNA #Shorts",
     videoDescription: 'AlphaGenome 2 decodes disease variants across 68 tissues.',

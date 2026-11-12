@@ -50,3 +50,4 @@ main().catch((err) => {
   console.error('❌ Failed to render avatars:', err);
   process.exit(1);
 });
+

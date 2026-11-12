@@ -3,6 +3,8 @@ export interface SocialPublishRequest {
   title: string;
   description: string;
   tags: string[];
+  topic: string;
+  sourceName?: string;
 }
 
 export interface PlatformPublishResult {

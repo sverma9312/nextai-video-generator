@@ -100,6 +100,8 @@ export async function runPipeline(): Promise<void> {
     title: script.videoTitle,
     description: script.videoDescription,
     tags: script.hashtags,
+    topic: story.headline,
+    sourceName: story.sourceName,
   });
 
   console.log('\n====================================================');

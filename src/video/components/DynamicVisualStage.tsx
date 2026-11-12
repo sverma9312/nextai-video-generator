@@ -1,7 +1,6 @@
 import React from 'react';
 import { Img, interpolate, spring, useCurrentFrame, useVideoConfig } from 'remotion';
 import type { FeedCard, VideoScript } from '../../feed/types';
-import { AISHORT_APP_ICON } from './assets';
 
 interface DynamicVisualStageProps {
   story: FeedCard;
@@ -13,19 +12,15 @@ export const DynamicVisualStage: React.FC<DynamicVisualStageProps> = ({ story, s
   const { fps, durationInFrames } = useVideoConfig();
 
   // Scene transition thresholds (in frames)
-  // Scene 1 (Hook): 0 -> 28% of video
-  // Scene 2 (Point 1 Breakdown): 28% -> 62% of video
-  // Scene 3 (Point 2 Impact): 62% -> (duration - 130 frames)
-  // Scene 4 (Outro Hand-off): last 130 frames
-  const scene1End = Math.floor(durationInFrames * 0.28);
-  const scene2End = Math.floor(durationInFrames * 0.62);
-  const outroStart = durationInFrames - 130;
+  // Scene 1 (Hook / Overview): 0 -> 33% of video
+  // Scene 2 (Feature Breakdown): 33% -> 66% of video
+  // Scene 3 (Impact & Conclusion): 66% -> End of video (clean ending right on the news!)
+  const scene1End = Math.floor(durationInFrames * 0.33);
+  const scene2End = Math.floor(durationInFrames * 0.66);
 
   // Active scene determination
-  let currentScene: 1 | 2 | 3 | 4 = 1;
-  if (frame >= outroStart) {
-    currentScene = 4;
-  } else if (frame >= scene2End) {
+  let currentScene: 1 | 2 | 3 = 1;
+  if (frame >= scene2End) {
     currentScene = 3;
   } else if (frame >= scene1End) {
     currentScene = 2;
@@ -69,20 +64,6 @@ export const DynamicVisualStage: React.FC<DynamicVisualStageProps> = ({ story, s
     fps,
     config: { damping: 13, mass: 0.85 },
   });
-  const s3ExitProgress = interpolate(frame, [outroStart - 15, outroStart], [1, 0], {
-    extrapolateLeft: 'clamp',
-    extrapolateRight: 'clamp',
-  });
-
-  // -------------------------------------------------------------
-  // ANIMATIONS FOR SCENE 4 (AISHORT APP LOGO FINALE)
-  // -------------------------------------------------------------
-  const s4RelativeFrame = Math.max(0, frame - outroStart);
-  const s4Entrance = spring({
-    frame: s4RelativeFrame,
-    fps,
-    config: { damping: 14, mass: 0.85 },
-  });
 
   // Active point text
   const point1Text = script.corePoints[0] || story.summary || 'Key breakthrough announced in latest briefing.';
@@ -114,7 +95,7 @@ export const DynamicVisualStage: React.FC<DynamicVisualStageProps> = ({ story, s
         {[
           { label: '01 OVERVIEW', active: currentScene === 1, done: currentScene > 1 },
           { label: '02 BREAKDOWN', active: currentScene === 2, done: currentScene > 2 },
-          { label: '03 IMPACT', active: currentScene === 3, done: currentScene > 3 },
+          { label: '03 IMPACT', active: currentScene === 3, done: false },
         ].map((step, idx) => (
           <div
             key={idx}
@@ -525,7 +506,6 @@ export const DynamicVisualStage: React.FC<DynamicVisualStageProps> = ({ story, s
             justifyContent: 'space-between',
             boxSizing: 'border-box',
             transform: `scale(${s3Entrance})`,
-            opacity: s3ExitProgress,
             overflow: 'hidden',
           }}
         >
@@ -629,111 +609,6 @@ export const DynamicVisualStage: React.FC<DynamicVisualStageProps> = ({ story, s
                 <span style={{ fontSize: 17, fontWeight: 700, color: '#f1f5f9' }}>{badge.text}</span>
               </div>
             ))}
-          </div>
-        </div>
-      )}
-
-      {/* ========================================================= */}
-      {/* SCENE 4: AIShort OFFICIAL APP LOGO FINALE                */}
-      {/* ========================================================= */}
-      {currentScene === 4 && (
-        <div
-          style={{
-            position: 'relative',
-            width: 960,
-            height: 680,
-            borderRadius: 36,
-            backgroundColor: '#0c0e18',
-            border: '2px solid rgba(56, 189, 248, 0.4)',
-            boxShadow: '0 30px 70px rgba(0, 0, 0, 0.8), 0 0 50px rgba(56, 189, 248, 0.25)',
-            padding: '48px',
-            display: 'flex',
-            flexDirection: 'column',
-            alignItems: 'center',
-            justifyContent: 'center',
-            gap: 28,
-            boxSizing: 'border-box',
-            transform: `scale(${s4Entrance})`,
-            overflow: 'hidden',
-          }}
-        >
-          {/* Subtle radial ambient glow */}
-          <div
-            style={{
-              position: 'absolute',
-              width: 500,
-              height: 500,
-              borderRadius: '50%',
-              background: 'radial-gradient(circle, rgba(56, 189, 248, 0.2) 0%, transparent 70%)',
-              filter: 'blur(50px)',
-            }}
-          />
-
-          {/* Official AIShort App Logo Icon */}
-          <div
-            style={{
-              width: 190,
-              height: 190,
-              borderRadius: 44,
-              overflow: 'hidden',
-              boxShadow: '0 20px 50px rgba(0, 0, 0, 0.7), 0 0 35px rgba(56, 189, 248, 0.4)',
-              border: '2px solid rgba(255, 255, 255, 0.15)',
-              position: 'relative',
-              zIndex: 10,
-            }}
-          >
-            <Img
-              src={AISHORT_APP_ICON}
-              style={{
-                width: '100%',
-                height: '100%',
-                objectFit: 'cover',
-              }}
-            />
-          </div>
-
-          {/* App Brand Typography */}
-          <div style={{ textAlign: 'center', position: 'relative', zIndex: 10 }}>
-            <div
-              style={{
-                fontSize: 54,
-                fontWeight: 900,
-                color: '#ffffff',
-                letterSpacing: '-0.02em',
-                marginBottom: 8,
-              }}
-            >
-              AIShort
-            </div>
-            <div
-              style={{
-                fontSize: 22,
-                fontWeight: 700,
-                color: '#94a3b8',
-                letterSpacing: '0.12em',
-                textTransform: 'uppercase',
-              }}
-            >
-              Daily AI News in 60 Words
-            </div>
-          </div>
-
-          {/* Website domain pill */}
-          <div
-            style={{
-              padding: '12px 32px',
-              borderRadius: 9999,
-              backgroundColor: 'rgba(56, 189, 248, 0.12)',
-              border: '1.5px solid rgba(56, 189, 248, 0.4)',
-              color: '#38bdf8',
-              fontSize: 24,
-              fontWeight: 800,
-              letterSpacing: '0.06em',
-              position: 'relative',
-              zIndex: 10,
-            }}
-          >
-            aishort.nextai-apps.com
           </div>
         </div>
       )}
