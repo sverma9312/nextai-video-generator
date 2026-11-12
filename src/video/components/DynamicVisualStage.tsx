@@ -47,14 +47,6 @@ export const DynamicVisualStage: React.FC<DynamicVisualStageProps> = ({ story, s
     extrapolateRight: 'clamp',
   });
 
-  // Cyber HUD Scanner line: sweeps down the image every 75 frames (2.5s)
-  const scanProgress = (frame % 75) / 75;
-  const scanY = interpolate(scanProgress, [0, 1], [-10, 560]);
-
-  // Specular Light Sheen: sweeps across the card diagonally every 110 frames
-  const sheenProgress = (frame % 110) / 110;
-  const sheenX = interpolate(sheenProgress, [0, 1], [-400, 1200]);
-
   // Scene 1 exit animation
   const s1ExitProgress = interpolate(frame, [scene1End - 15, scene1End], [1, 0], {
     extrapolateLeft: 'clamp',
@@ -117,7 +109,7 @@ export const DynamicVisualStage: React.FC<DynamicVisualStageProps> = ({ story, s
         }}
       >
         {[
-          { label: '01 HOOK', active: currentScene === 1, done: currentScene > 1 },
+          { label: '01 OVERVIEW', active: currentScene === 1, done: currentScene > 1 },
           { label: '02 BREAKDOWN', active: currentScene === 2, done: currentScene > 2 },
           { label: '03 IMPACT', active: currentScene === 3, done: currentScene > 3 },
         ].map((step, idx) => (
@@ -210,36 +202,7 @@ export const DynamicVisualStage: React.FC<DynamicVisualStageProps> = ({ story, s
               style={{
                 position: 'absolute',
                 inset: 0,
-                background: 'linear-gradient(180deg, rgba(0,0,0,0.2) 0%, rgba(0,0,0,0.7) 100%)',
-              }}
-            />
-
-            {/* CYBER HUD SCANLINE (Animated Laser Sweep) */}
-            <div
-              style={{
-                position: 'absolute',
-                top: scanY,
-                left: 0,
-                right: 0,
-                height: 3,
-                backgroundColor: '#38bdf8',
-                boxShadow: '0 0 16px 4px rgba(56, 189, 248, 0.9), 0 0 30px 8px rgba(14, 165, 233, 0.5)',
-                pointerEvents: 'none',
-              }}
-            />
-
-            {/* SPECULAR LIGHT SHEEN (Diagonal 45° sweep) */}
-            <div
-              style={{
-                position: 'absolute',
-                top: -150,
-                bottom: -150,
-                left: sheenX,
-                width: 120,
-                background:
-                  'linear-gradient(90deg, transparent 0%, rgba(255, 255, 255, 0.22) 50%, transparent 100%)',
-                transform: 'rotate(25deg)',
-                pointerEvents: 'none',
+                background: 'linear-gradient(180deg, rgba(0,0,0,0.15) 0%, rgba(0,0,0,0.65) 100%)',
               }}
             />
 
@@ -672,3 +635,4 @@ export const DynamicVisualStage: React.FC<DynamicVisualStageProps> = ({ story, s
     </div>
   );
 };
+
