@@ -36,6 +36,17 @@ export interface PostedRecord {
   postedAt: string;
 }
 
+export interface VideoScriptBadge {
+  icon?: string;
+  label: string;
+  value: string;
+}
+
+export interface VideoScriptTag {
+  icon?: string;
+  text: string;
+}
+
 export interface VideoScript {
   hook: string;
   corePoints: string[];
@@ -44,6 +55,8 @@ export interface VideoScript {
   videoTitle: string;
   videoDescription: string;
   hashtags: string[];
+  scene2Badges?: VideoScriptBadge[];
+  scene3Tags?: VideoScriptTag[];
 }
 
 export interface SubtitleWord {

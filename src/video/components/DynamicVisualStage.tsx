@@ -7,6 +7,101 @@ interface DynamicVisualStageProps {
   script: VideoScript;
 }
 
+function resolveScene2Badges(story: FeedCard, script?: VideoScript): { icon: string; label: string; value: string; color: string }[] {
+  if (script?.scene2Badges && script.scene2Badges.length >= 2) {
+    return [
+      {
+        icon: script.scene2Badges[0].icon || '⚡',
+        label: (script.scene2Badges[0].label || 'FEATURE').toUpperCase(),
+        value: script.scene2Badges[0].value,
+        color: '#38bdf8',
+      },
+      {
+        icon: script.scene2Badges[1].icon || '🛠️',
+        label: (script.scene2Badges[1].label || 'CAPABILITY').toUpperCase(),
+        value: script.scene2Badges[1].value,
+        color: '#818cf8',
+      },
+    ];
+  }
+
+  const cat = (story.category || '').toLowerCase();
+  const text = (story.headline + ' ' + story.summary).toLowerCase();
+
+  if (cat.includes('product') || text.includes('meeting') || text.includes('office') || text.includes('tool') || text.includes('sheet')) {
+    return [
+      { icon: '⚡', label: 'CAPABILITY', value: 'Live Video Calls', color: '#38bdf8' },
+      { icon: '🛠️', label: 'SUITE', value: 'Sheets & Canvas', color: '#818cf8' },
+    ];
+  }
+  if (cat.includes('business') || text.includes('ipo') || text.includes('invest') || text.includes('nasdaq')) {
+    return [
+      { icon: '📈', label: 'MARKET', value: 'Wall Street', color: '#10b981' },
+      { icon: '🏛️', label: 'LISTING', value: 'Public Offering', color: '#38bdf8' },
+    ];
+  }
+  if (cat.includes('research') || text.includes('paper') || text.includes('quantum') || text.includes('science')) {
+    return [
+      { icon: '🔬', label: 'METHOD', value: 'Peer-Reviewed', color: '#a855f7' },
+      { icon: '🧠', label: 'DOMAIN', value: 'Frontier AI', color: '#38bdf8' },
+    ];
+  }
+  return [
+    { icon: '⚡', label: 'EFFICIENCY', value: 'High-Speed', color: '#38bdf8' },
+    { icon: '🌐', label: 'DEPLOYMENT', value: 'Cloud Scale', color: '#818cf8' },
+  ];
+}
+
+function resolveScene3Tags(story: FeedCard, script?: VideoScript): { icon: string; text: string; color: string }[] {
+  const palette = ['#38bdf8', '#10b981', '#fbbf24'];
+  if (script?.scene3Tags && script.scene3Tags.length >= 3) {
+    return script.scene3Tags.slice(0, 3).map((tag, idx) => ({
+      icon: tag.icon || '🎯',
+      text: tag.text,
+      color: palette[idx % palette.length],
+    }));
+  }
+
+  const cat = (story.category || '').toLowerCase();
+  const text = (story.headline + ' ' + story.summary).toLowerCase();
+
+  if (cat.includes('product') || text.includes('meeting') || text.includes('office') || text.includes('tool') || text.includes('sheet')) {
+    return [
+      { icon: '👥', text: 'Team Collab', color: '#38bdf8' },
+      { icon: '⚡', text: 'Real-Time AI', color: '#10b981' },
+      { icon: '💼', text: 'Office Suite', color: '#fbbf24' },
+    ];
+  }
+  if (cat.includes('business') || text.includes('ipo') || text.includes('invest') || text.includes('nasdaq')) {
+    return [
+      { icon: '💰', text: 'Capital Growth', color: '#38bdf8' },
+      { icon: '🌐', text: 'Enterprise Scale', color: '#10b981' },
+      { icon: '📊', text: 'Nasdaq Listed', color: '#fbbf24' },
+    ];
+  }
+  if (cat.includes('research') || text.includes('paper') || text.includes('quantum') || text.includes('science')) {
+    return [
+      { icon: '🧪', text: 'Verified Proof', color: '#38bdf8' },
+      { icon: '💡', text: 'Breakthrough', color: '#10b981' },
+      { icon: '📚', text: 'Published Study', color: '#fbbf24' },
+    ];
+  }
+  return [
+    { icon: '🚀', text: 'Production Scale', color: '#38bdf8' },
+    { icon: '🎯', text: 'Real-World Impact', color: '#10b981' },
+    { icon: '🤖', text: 'Agent Ready', color: '#fbbf24' },
+  ];
+}
+
+function resolveScene2CategoryTag(story: FeedCard): string {
+  const cat = (story.category || '').toLowerCase();
+  const text = (story.headline + ' ' + story.summary).toLowerCase();
+  if (cat.includes('product') || text.includes('meeting') || text.includes('tool')) return 'PRODUCT SPOTLIGHT';
+  if (cat.includes('business') || text.includes('ipo') || text.includes('market')) return 'MARKET PULSE';
+  if (cat.includes('research') || text.includes('science')) return 'SCIENCE BREAKTHROUGH';
+  return 'TECH DEEP-DIVE';
+}
+
 export const DynamicVisualStage: React.FC<DynamicVisualStageProps> = ({ story, script }) => {
   const frame = useCurrentFrame();
   const { fps, durationInFrames } = useVideoConfig();
@@ -25,6 +120,11 @@ export const DynamicVisualStage: React.FC<DynamicVisualStageProps> = ({ story, s
   } else if (frame >= scene1End) {
     currentScene = 2;
   }
+
+  // Dynamic context-aware badges
+  const scene2Badges = resolveScene2Badges(story, script);
+  const scene3Tags = resolveScene3Tags(story, script);
+  const scene2CategoryTag = resolveScene2CategoryTag(story);
 
   // -------------------------------------------------------------
   // ANIMATIONS FOR SCENE 1 (HERO PHOTO + CYBER HUD)
@@ -387,11 +487,11 @@ export const DynamicVisualStage: React.FC<DynamicVisualStageProps> = ({ story, s
               style={{
                 fontSize: 18,
                 fontWeight: 700,
-                color: '#64748b',
+                color: '#94a3b8',
                 letterSpacing: '0.12em',
               }}
             >
-              TECH DEEP-DIVE
+              {scene2CategoryTag}
             </div>
           </div>
 
@@ -412,77 +512,44 @@ export const DynamicVisualStage: React.FC<DynamicVisualStageProps> = ({ story, s
 
           {/* Feature Highlight Metric Pills */}
           <div style={{ display: 'flex', gap: 16 }}>
-            <div
-              style={{
-                flex: 1,
-                padding: '18px 24px',
-                borderRadius: 20,
-                backgroundColor: 'rgba(255, 255, 255, 0.04)',
-                border: '1px solid rgba(255, 255, 255, 0.1)',
-                display: 'flex',
-                alignItems: 'center',
-                gap: 16,
-              }}
-            >
+            {scene2Badges.map((badge, idx) => (
               <div
+                key={idx}
                 style={{
-                  fontSize: 28,
-                  width: 52,
-                  height: 52,
-                  borderRadius: 14,
-                  backgroundColor: 'rgba(56, 189, 248, 0.15)',
+                  flex: 1,
+                  padding: '18px 24px',
+                  borderRadius: 20,
+                  backgroundColor: 'rgba(255, 255, 255, 0.04)',
+                  border: '1px solid rgba(255, 255, 255, 0.1)',
                   display: 'flex',
                   alignItems: 'center',
-                  justifyContent: 'center',
+                  gap: 16,
                 }}
               >
-                ⚡
-              </div>
-              <div>
-                <div style={{ fontSize: 14, color: '#94a3b8', fontWeight: 600, letterSpacing: '0.08em' }}>
-                  PERFORMANCE
+                <div
+                  style={{
+                    fontSize: 28,
+                    width: 52,
+                    height: 52,
+                    borderRadius: 14,
+                    backgroundColor: `${badge.color}26`,
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                  }}
+                >
+                  {badge.icon}
                 </div>
-                <div style={{ fontSize: 22, color: '#ffffff', fontWeight: 800 }}>
-                  High-Precision
-                </div>
-              </div>
-            </div>
-
-            <div
-              style={{
-                flex: 1,
-                padding: '18px 24px',
-                borderRadius: 20,
-                backgroundColor: 'rgba(255, 255, 255, 0.04)',
-                border: '1px solid rgba(255, 255, 255, 0.1)',
-                display: 'flex',
-                alignItems: 'center',
-                gap: 16,
-              }}
-            >
-              <div
-                style={{
-                  fontSize: 28,
-                  width: 52,
-                  height: 52,
-                  borderRadius: 14,
-                  backgroundColor: 'rgba(99, 102, 241, 0.15)',
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                }}
-              >
-                🔬
-              </div>
-              <div>
-                <div style={{ fontSize: 14, color: '#94a3b8', fontWeight: 600, letterSpacing: '0.08em' }}>
-                  ARCHITECTURE
-                </div>
-                <div style={{ fontSize: 22, color: '#ffffff', fontWeight: 800 }}>
-                  Next-Gen Model
+                <div>
+                  <div style={{ fontSize: 13, color: '#94a3b8', fontWeight: 600, letterSpacing: '0.08em' }}>
+                    {badge.label}
+                  </div>
+                  <div style={{ fontSize: 20, color: '#ffffff', fontWeight: 800 }}>
+                    {badge.value}
+                  </div>
                 </div>
               </div>
-            </div>
+            ))}
           </div>
         </div>
       )}
@@ -586,11 +653,7 @@ export const DynamicVisualStage: React.FC<DynamicVisualStageProps> = ({ story, s
 
           {/* 3 Key Takeaway Badges */}
           <div style={{ display: 'flex', gap: 14 }}>
-            {[
-              { icon: '🚀', text: 'Production Scale', color: '#38bdf8' },
-              { icon: '🎯', text: 'Real-World Impact', color: '#10b981' },
-              { icon: '📊', text: 'Benchmark Lead', color: '#fbbf24' },
-            ].map((badge, i) => (
+            {scene3Tags.map((badge, i) => (
               <div
                 key={i}
                 style={{

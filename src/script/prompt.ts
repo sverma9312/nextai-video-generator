@@ -19,7 +19,10 @@ Writing Rules:
 4. Accessibility & Virality: Speak in clear, punchy, everyday language. Avoid dry developer jargon (like token pricing, raw parameters, or obscure API benchmarks) unless translated into plain human benefits. Make it fascinating for general audiences so anyone scrolling will instantly understand, save, and share it with friends or coworkers.
 5. NO Spoken Call-to-Action (CTA): End the script cleanly on the final news conclusion or mind-blowing takeaway. DO NOT include ANY spoken outro, such as "Read the full 60 words", "Read more", "Link in bio", or "Subscribe". The video MUST end immediately on the news ending.
 6. Clean Speech: "fullSpokenText" must be clean English meant to be read aloud by Text-to-Speech. DO NOT include markdown, bullet points, asterisks (*), hashtags (#), emojis, or stage directions like [sound effect] or (laughs).
-7. Title & Hashtags: Provide an irresistible viral title (under 60 characters with #Shorts) and 5 trending hashtags (#AI, #Claude, #TechNews, #Productivity, #Shorts).
+7. Title & Hashtags: Provide an irresistible viral title (under 60 characters with #Shorts) and 5 trending hashtags (#AI, #TechNews, #Productivity, #Shorts, #AIShort).
+8. Contextual Visual Badges: Provide topic-specific metadata badges matching THIS exact story:
+   - "scene2Badges": Exactly 2 short badges for Slide 2 (label: 1 word, value: 1-3 words).
+   - "scene3Tags": Exactly 3 punchy takeaway tags for Slide 3 (text: 1-3 words).
 
 You MUST respond ONLY with a valid JSON object matching this exact schema:
 {
@@ -32,7 +35,16 @@ You MUST respond ONLY with a valid JSON object matching this exact schema:
   "fullSpokenText": "The complete hook and all three core points joined together as a single continuous natural spoken paragraph ending cleanly on the news takeaway.",
   "videoTitle": "Viral Title Under 60 Chars #Shorts",
   "videoDescription": "Engaging 2-3 sentence description with credit to ${card.sourceName} and link to https://aishort.nextai-apps.com/",
-  "hashtags": ["#AI", "#TechNews", "#AIModels", "#Shorts", "#AIShort"]
+  "hashtags": ["#AI", "#TechNews", "#Productivity", "#Shorts", "#AIShort"],
+  "scene2Badges": [
+    { "icon": "⚡", "label": "FEATURE", "value": "Live Video Calls" },
+    { "icon": "🛠️", "label": "WORKSPACE", "value": "Sheets & Canvas" }
+  ],
+  "scene3Tags": [
+    { "icon": "👥", "text": "Team Collab" },
+    { "icon": "⚡", "text": "Real-Time AI" },
+    { "icon": "💼", "text": "Office Suite" }
+  ]
 }`;
 }
 
