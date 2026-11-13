@@ -1,0 +1,922 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>AI Tech Videos — NextAI Autonomous Video Studio</title>
+  <meta
+    name="description"
+    content="Autonomous AI tech news video generator. 30-second vertical reels breaking down verified AI research, frontier models, and developer tools — rendered and published 2x daily with $0 infra cost."
+  />
+
+  <!-- Open Graph / Social Media -->
+  <meta property="og:type" content="website" />
+  <meta property="og:url" content="https://ainewsvideo.nextai-apps.com/" />
+  <meta property="og:title" content="AI Tech Videos — Autonomous AI News Reels" />
+  <meta property="og:description" content="Cinematic 30-second vertical reels breaking down verified AI breakthroughs. Scripted by Gemini, voiced by Edge-TTS, rendered via Remotion at $0 infra cost." />
+  <meta property="og:image" content="https://nextai-apps.com/icon.png" />
+
+  <!-- Twitter / X Card -->
+  <meta name="twitter:card" content="summary_large_image" />
+  <meta name="twitter:title" content="AI Tech Videos — NextAI Autonomous Video Studio" />
+  <meta name="twitter:description" content="Autonomous AI tech news video generator for YouTube Shorts & Instagram Reels." />
+  <meta name="twitter:image" content="https://nextai-apps.com/icon.png" />
+
+  <!-- Favicon Suite -->
+  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%23111118'/%3E%3Cpath d='M10 52V12h9l14 22v18l-14-22v22z' fill='%237466f5'/%3E%3Cpath d='M38 12 56 32 38 52V41l8-9-8-9z' fill='%23fff'/%3E%3C/svg%3E" />
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+
+  <style>
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+    body {
+      background-color: #07080C;
+      color: #F3F4F6;
+      font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      min-height: 100vh;
+      min-height: 100dvh;
+      overflow-x: hidden;
+      position: relative;
+      -webkit-font-smoothing: antialiased;
+      display: flex;
+      flex-direction: column;
+    }
+
+    /* Ambient Cyberpunk Glow Effects */
+    .ambient-glow-top {
+      position: absolute;
+      width: 700px;
+      height: 700px;
+      background: radial-gradient(circle, rgba(168, 85, 247, 0.16) 0%, rgba(99, 102, 241, 0.08) 40%, transparent 70%);
+      top: -150px;
+      left: 50%;
+      transform: translateX(-50%);
+      filter: blur(70px);
+      pointer-events: none;
+      z-index: 0;
+    }
+    .ambient-glow-bottom {
+      position: absolute;
+      width: 600px;
+      height: 600px;
+      background: radial-gradient(circle, rgba(236, 72, 153, 0.1) 0%, rgba(168, 85, 247, 0.05) 50%, transparent 70%);
+      bottom: -100px;
+      right: 5%;
+      filter: blur(80px);
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    /* Top Navigation */
+    header {
+      position: relative;
+      z-index: 10;
+      width: 100%;
+      max-width: 1140px;
+      margin: 0 auto;
+      padding: 20px 24px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+    .brand-link {
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+      text-decoration: none;
+      color: #FFFFFF;
+      font-weight: 700;
+      font-size: 14.5px;
+    }
+    .brand-logo-badge {
+      width: 32px;
+      height: 32px;
+      border-radius: 9px;
+      background: #111118;
+      border: 1px solid rgba(255, 255, 255, 0.15);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .brand-title {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .brand-pill {
+      font-size: 11px;
+      font-weight: 700;
+      padding: 2px 8px;
+      border-radius: 999px;
+      background: rgba(168, 85, 247, 0.15);
+      color: #D8B4FE;
+      border: 1px solid rgba(168, 85, 247, 0.35);
+    }
+    .nav-actions {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+    .nav-btn {
+      font-size: 12px;
+      font-weight: 600;
+      color: #9CA3AF;
+      text-decoration: none;
+      padding: 6px 12px;
+      border-radius: 8px;
+      background: rgba(255, 255, 255, 0.03);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      transition: all 0.2s ease;
+    }
+    .nav-btn:hover {
+      color: #FFFFFF;
+      background: rgba(255, 255, 255, 0.08);
+      border-color: rgba(255, 255, 255, 0.18);
+    }
+
+    /* Main Container */
+    main {
+      position: relative;
+      z-index: 1;
+      width: 100%;
+      max-width: 1140px;
+      margin: 0 auto;
+      padding: 10px 24px 60px;
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      gap: 36px;
+    }
+
+    /* Hero Eyebrow & Titles */
+    .hero-header {
+      text-align: center;
+      max-width: 760px;
+      margin: 0 auto;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 14px;
+    }
+    .pipeline-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 5px 14px;
+      background: rgba(168, 85, 247, 0.1);
+      border: 1px solid rgba(168, 85, 247, 0.28);
+      border-radius: 999px;
+      font-size: 11px;
+      font-weight: 700;
+      color: #E9D5FF;
+      letter-spacing: 0.05em;
+      text-transform: uppercase;
+      backdrop-filter: blur(10px);
+    }
+    .live-pulse {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: #10B981;
+      box-shadow: 0 0 10px #10B981;
+      animation: pulse 2s infinite;
+    }
+    @keyframes pulse {
+      0% { opacity: 1; transform: scale(1); }
+      50% { opacity: 0.4; transform: scale(0.85); }
+      100% { opacity: 1; transform: scale(1); }
+    }
+    h1 {
+      font-size: clamp(32px, 4.5vw, 46px);
+      font-weight: 800;
+      line-height: 1.15;
+      letter-spacing: -0.03em;
+    }
+    .text-gradient {
+      background: linear-gradient(135deg, #C084FC 0%, #E879F9 50%, #F472B6 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+    .hero-desc {
+      font-size: 14.5px;
+      color: #9CA3AF;
+      line-height: 1.55;
+      max-width: 620px;
+    }
+
+    /* Social CTA Channel Buttons Bar */
+    .channel-buttons-bar {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 12px;
+      flex-wrap: wrap;
+      margin-top: 4px;
+    }
+    .btn-channel {
+      display: inline-flex;
+      align-items: center;
+      gap: 9px;
+      padding: 10px 18px;
+      border-radius: 12px;
+      font-size: 13px;
+      font-weight: 700;
+      text-decoration: none;
+      transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+    .btn-youtube {
+      background: rgba(239, 68, 68, 0.12);
+      border: 1px solid rgba(239, 68, 68, 0.35);
+      color: #FCA5A5;
+    }
+    .btn-youtube:hover {
+      background: rgba(239, 68, 68, 0.22);
+      border-color: rgba(239, 68, 68, 0.6);
+      color: #FFFFFF;
+      transform: translateY(-2px);
+      box-shadow: 0 8px 24px -6px rgba(239, 68, 68, 0.4);
+    }
+    .btn-instagram {
+      background: linear-gradient(135deg, rgba(236, 72, 153, 0.15), rgba(168, 85, 247, 0.15));
+      border: 1px solid rgba(236, 72, 153, 0.35);
+      color: #F9A8D4;
+    }
+    .btn-instagram:hover {
+      background: linear-gradient(135deg, rgba(236, 72, 153, 0.28), rgba(168, 85, 247, 0.28));
+      border-color: rgba(236, 72, 153, 0.65);
+      color: #FFFFFF;
+      transform: translateY(-2px);
+      box-shadow: 0 8px 24px -6px rgba(236, 72, 153, 0.4);
+    }
+    .btn-icon {
+      font-size: 16px;
+      line-height: 1;
+    }
+
+    /* Showcase Layout: Phone Player + Pipeline Specs */
+    .showcase-grid {
+      display: grid;
+      grid-template-columns: 360px 1fr;
+      gap: 36px;
+      align-items: center;
+      background: rgba(255, 255, 255, 0.02);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      border-radius: 24px;
+      padding: 32px;
+      backdrop-filter: blur(12px);
+      box-shadow: 0 20px 50px -15px rgba(0, 0, 0, 0.5);
+    }
+
+    /* Phone Mockup Frame (9:16 Aspect Ratio) */
+    .phone-container {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 14px;
+    }
+    .phone-frame {
+      width: 100%;
+      max-width: 320px;
+      aspect-ratio: 9 / 16;
+      background: #000000;
+      border-radius: 36px;
+      border: 2px solid rgba(168, 85, 247, 0.4);
+      box-shadow: 0 0 35px rgba(168, 85, 247, 0.25), 0 20px 40px rgba(0, 0, 0, 0.8);
+      position: relative;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+    }
+    /* Dynamic Island / Speaker Notch */
+    .phone-notch {
+      position: absolute;
+      top: 10px;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 80px;
+      height: 18px;
+      background: #111116;
+      border-radius: 12px;
+      z-index: 5;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+    }
+    .phone-notch-camera {
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      background: #08090C;
+      border: 1px solid rgba(255, 255, 255, 0.1);
+    }
+    .phone-iframe {
+      width: 100%;
+      height: 100%;
+      border: none;
+      background: #050608;
+    }
+    .phone-quick-actions {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      font-size: 11.5px;
+      font-weight: 600;
+      color: #9CA3AF;
+    }
+    .phone-quick-actions a {
+      color: #C084FC;
+      text-decoration: none;
+    }
+    .phone-quick-actions a:hover {
+      text-decoration: underline;
+    }
+
+    /* Right Column: Episode Details & Architecture Telemetry */
+    .details-container {
+      display: flex;
+      flex-direction: column;
+      gap: 22px;
+      text-align: left;
+    }
+    .episode-header-box {
+      border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+      padding-bottom: 18px;
+    }
+    .episode-label {
+      font-size: 11px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: #34D399;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      margin-bottom: 6px;
+    }
+    .episode-title {
+      font-size: clamp(20px, 2.5vw, 26px);
+      font-weight: 800;
+      color: #FFFFFF;
+      line-height: 1.25;
+    }
+    .episode-headline {
+      font-size: 13.5px;
+      color: #9CA3AF;
+      margin-top: 6px;
+      line-height: 1.5;
+    }
+    .episode-meta-row {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      margin-top: 10px;
+      font-size: 12px;
+      color: #6B7280;
+      flex-wrap: wrap;
+    }
+    .meta-tag {
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      background: rgba(255, 255, 255, 0.04);
+      padding: 3px 8px;
+      border-radius: 6px;
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      color: #C7D2FE;
+    }
+
+    /* Pipeline Architecture Specs Breakdown */
+    .pipeline-specs-title {
+      font-size: 12px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: #9CA3AF;
+      margin-bottom: 10px;
+    }
+    .pipeline-steps-list {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 10px;
+    }
+    .spec-step {
+      background: rgba(255, 255, 255, 0.02);
+      border: 1px solid rgba(255, 255, 255, 0.06);
+      border-radius: 12px;
+      padding: 10px 14px;
+      display: flex;
+      align-items: flex-start;
+      gap: 12px;
+      font-size: 12.5px;
+      line-height: 1.4;
+      transition: background 0.2s ease;
+    }
+    .spec-step:hover {
+      background: rgba(255, 255, 255, 0.04);
+      border-color: rgba(255, 255, 255, 0.12);
+    }
+    .step-num {
+      width: 22px;
+      height: 22px;
+      border-radius: 6px;
+      background: rgba(168, 85, 247, 0.15);
+      border: 1px solid rgba(168, 85, 247, 0.35);
+      color: #D8B4FE;
+      font-size: 11px;
+      font-weight: 700;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+      margin-top: 1px;
+    }
+    .step-content strong {
+      color: #FFFFFF;
+      font-weight: 600;
+    }
+    .step-content span {
+      color: #9CA3AF;
+      font-size: 11.5px;
+      display: block;
+      margin-top: 1px;
+    }
+
+    /* Highlights Pills Row */
+    .highlights-row {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      flex-wrap: wrap;
+      margin-top: 4px;
+    }
+    .highlight-pill {
+      font-size: 11px;
+      font-weight: 700;
+      padding: 4px 10px;
+      border-radius: 999px;
+      background: rgba(16, 185, 129, 0.08);
+      border: 1px solid rgba(16, 185, 129, 0.25);
+      color: #34D399;
+    }
+    .highlight-pill.purple {
+      background: rgba(168, 85, 247, 0.08);
+      border-color: rgba(168, 85, 247, 0.25);
+      color: #C084FC;
+    }
+    .highlight-pill.blue {
+      background: rgba(59, 130, 246, 0.08);
+      border-color: rgba(59, 130, 246, 0.25);
+      color: #93C5FD;
+    }
+
+    /* Archive Section */
+    .archive-section {
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+    }
+    .archive-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+    .archive-title {
+      font-size: 18px;
+      font-weight: 700;
+      color: #FFFFFF;
+    }
+    .archive-subtitle {
+      font-size: 12px;
+      color: #6B7280;
+    }
+    .archive-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+      gap: 12px;
+    }
+    .archive-card {
+      background: rgba(255, 255, 255, 0.02);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      border-radius: 14px;
+      padding: 14px 16px;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      transition: all 0.2s ease;
+      cursor: pointer;
+      text-decoration: none;
+      color: inherit;
+    }
+    .archive-card:hover {
+      background: rgba(255, 255, 255, 0.045);
+      border-color: rgba(168, 85, 247, 0.4);
+      transform: translateY(-2px);
+    }
+    .archive-card-top {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+    }
+    .archive-card-tag {
+      font-size: 10px;
+      font-weight: 700;
+      text-transform: uppercase;
+      padding: 2px 7px;
+      border-radius: 6px;
+      background: rgba(168, 85, 247, 0.12);
+      color: #D8B4FE;
+      border: 1px solid rgba(168, 85, 247, 0.25);
+    }
+    .archive-card-dur {
+      font-size: 11px;
+      color: #6B7280;
+      font-family: 'JetBrains Mono', monospace;
+    }
+    .archive-card-title {
+      font-size: 13.5px;
+      font-weight: 700;
+      color: #F3F4F6;
+      line-height: 1.35;
+    }
+    .archive-card-desc {
+      font-size: 12px;
+      color: #9CA3AF;
+      line-height: 1.4;
+      display: -webkit-box;
+      -webkit-line-clamp: 2;
+      -webkit-box-orient: vertical;
+      overflow: hidden;
+    }
+    .archive-card-footer {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-top: 4px;
+      padding-top: 8px;
+      border-top: 1px solid rgba(255, 255, 255, 0.05);
+      font-size: 11px;
+      color: #6B7280;
+    }
+    .archive-play-btn {
+      color: #C084FC;
+      font-weight: 600;
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+    }
+
+    /* Footer */
+    footer {
+      width: 100%;
+      border-top: 1px solid rgba(255, 255, 255, 0.08);
+      padding: 24px;
+      text-align: center;
+      font-size: 12px;
+      color: #6B7280;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 12px;
+      flex-wrap: wrap;
+    }
+    footer a {
+      color: #9CA3AF;
+      text-decoration: none;
+    }
+    footer a:hover {
+      color: #FFFFFF;
+    }
+
+    /* Responsive Adaptation */
+    @media (max-width: 860px) {
+      .showcase-grid {
+        grid-template-columns: 1fr;
+        padding: 24px 18px;
+        gap: 28px;
+      }
+      .phone-container {
+        width: 100%;
+      }
+      .phone-frame {
+        max-width: 290px;
+      }
+    }
+    @media (max-width: 600px) {
+      header {
+        padding: 14px 16px;
+      }
+      main {
+        padding: 6px 16px 40px;
+        gap: 26px;
+      }
+      h1 {
+        font-size: 26px;
+      }
+      .hero-desc {
+        font-size: 13px;
+      }
+      .channel-buttons-bar {
+        width: 100%;
+      }
+      .btn-channel {
+        width: 100%;
+        justify-content: center;
+      }
+      .showcase-grid {
+        padding: 16px;
+        border-radius: 18px;
+      }
+      .phone-frame {
+        max-width: 260px;
+        border-radius: 28px;
+      }
+      .archive-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="ambient-glow-top"></div>
+  <div class="ambient-glow-bottom"></div>
+
+  <!-- Top Navigation -->
+  <header>
+    <a href="https://nextai-apps.com/" class="brand-link">
+      <div class="brand-logo-badge">
+        <svg viewBox="0 0 64 64" style="width: 18px; height: 18px; border-radius: 4px;">
+          <rect width="64" height="64" rx="14" fill="#111118"/>
+          <path d="M10 52V12h9l14 22v18l-14-22v22z" fill="#7466f5"/>
+          <path d="M38 12 56 32 38 52V41l8-9-8-9z" fill="#fff"/>
+        </svg>
+      </div>
+      <div class="brand-title">
+        <span>NextAI Apps</span>
+        <span class="brand-pill">AI Tech Videos</span>
+      </div>
+    </a>
+
+    <div class="nav-actions">
+      <a href="https://aishort.nextai-apps.com/" class="nav-btn" target="_blank" rel="noopener">AIShort App ↗</a>
+      <a href="https://github.com/sverma9312/nextai-video-generator" class="nav-btn" target="_blank" rel="noopener">GitHub Pipeline ↗</a>
+    </div>
+  </header>
+
+  <!-- Main Showcase Container -->
+  <main>
+    <!-- Hero Eyebrow & Header -->
+    <section class="hero-header">
+      <div class="pipeline-badge">
+        <span class="live-pulse"></span>
+        Autonomous Engine · 2x Daily at 04:00 & 14:00 UTC · $0 Infra Cost
+      </div>
+
+      <h1>
+        AI Tech Videos<br />
+        <span class="text-gradient">Daily Autonomous Reels</span>
+      </h1>
+
+      <p class="hero-desc">
+        Distilling verified artificial intelligence breakthroughs, frontier models, and developer tools into cinematic 30-second vertical videos. Scripted, voiced, rendered, and published to YouTube & Instagram with zero human intervention.
+      </p>
+
+      <!-- Channels CTA -->
+      <div class="channel-buttons-bar">
+        <a href="https://youtube.com/shorts/PiqtBoq419Q" class="btn-channel btn-youtube" target="_blank" rel="noopener" id="primary-yt-btn">
+          <span class="btn-icon">▶</span>
+          <span>Watch on YouTube Shorts</span>
+        </a>
+        <a href="https://www.instagram.com/aishortapp/" class="btn-channel btn-instagram" target="_blank" rel="noopener">
+          <span class="btn-icon">📷</span>
+          <span>Follow @aishortapp on Instagram</span>
+        </a>
+      </div>
+    </section>
+
+    <!-- Showcase Grid: Phone Mockup Frame + Live Pipeline Telemetry -->
+    <section class="showcase-grid">
+      <!-- Phone Mockup Container -->
+      <div class="phone-container">
+        <div class="phone-frame">
+          <div class="phone-notch">
+            <div class="phone-notch-camera"></div>
+          </div>
+          <iframe
+            id="featured-iframe"
+            class="phone-iframe"
+            src="https://www.youtube-nocookie.com/embed/PiqtBoq419Q?rel=0&modestbranding=1"
+            title="Featured AI Tech Video Reel"
+            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+            allowfullscreen
+          ></iframe>
+        </div>
+
+        <div class="phone-quick-actions">
+          <span>Featured:</span>
+          <a href="https://youtube.com/shorts/PiqtBoq419Q" target="_blank" rel="noopener" id="quick-yt-link">Open in YouTube ↗</a>
+          <span>·</span>
+          <a href="https://www.instagram.com/reel/Dfr7O82kl-D/" target="_blank" rel="noopener" id="quick-ig-link">Open in Instagram ↗</a>
+        </div>
+      </div>
+
+      <!-- Right Column: Episode Details & 5-Stage Architecture -->
+      <div class="details-container">
+        <div class="episode-header-box">
+          <div class="episode-label">
+            <span>●</span>
+            <span id="active-episode-badge">LATEST AUTONOMOUS EPISODE</span>
+          </div>
+          <h2 class="episode-title" id="active-episode-title">
+            Claude AI Just Joined Your Office #Shorts
+          </h2>
+          <p class="episode-headline" id="active-episode-headline">
+            Anthropic launches Claude Meetings and new productivity tools
+          </p>
+
+          <div class="episode-meta-row">
+            <span class="meta-tag">⏱ <span id="active-duration">31.3s</span> Reel</span>
+            <span class="meta-tag">🗓 <span id="active-date">Nov 12, 2026</span></span>
+            <span class="meta-tag">🔍 Source: Anthropic (via AIShort)</span>
+          </div>
+        </div>
+
+        <div>
+          <div class="pipeline-specs-title">5-Stage Autonomous Video Architecture</div>
+          <div class="pipeline-steps-list">
+            <div class="spec-step">
+              <div class="step-num">1</div>
+              <div class="step-content">
+                <strong>Autonomous Ingestion & Scoring</strong>
+                <span>Pulls live cards from AIShort API, filters unposted stories, and scores virality for consumer and developer relevance.</span>
+              </div>
+            </div>
+            <div class="spec-step">
+              <div class="step-num">2</div>
+              <div class="step-content">
+                <strong>Gemini 2.5 Flash Scripting</strong>
+                <span>Synthesizes high-retention short scripts with attention-grabbing hooks, technical breakdown, and real-world impact.</span>
+              </div>
+            </div>
+            <div class="spec-step">
+              <div class="step-num">3</div>
+              <div class="step-content">
+                <strong>Edge-TTS Neural Audio & Subtitles</strong>
+                <span>Generates human-clarity voiceover (Andrew Neural) with millisecond word timestamps for dynamic kinetic captions.</span>
+              </div>
+            </div>
+            <div class="spec-step">
+              <div class="step-num">4</div>
+              <div class="step-content">
+                <strong>Remotion Headless React Rendering</strong>
+                <span>Renders 1080×1920 30FPS MP4 video on GitHub Actions runners with live canvas audio waveforms and animated cards.</span>
+              </div>
+            </div>
+            <div class="spec-step">
+              <div class="step-num">5</div>
+              <div class="step-content">
+                <strong>Multi-Platform Social Auto-Publish</strong>
+                <span>Uploads direct binary video to Meta Graph API (Instagram Reels) and YouTube Data API v3 with clickable links.</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="highlights-row">
+          <span class="highlight-pill">✓ $0 Recurring Infra Cost</span>
+          <span class="highlight-pill purple">✓ 100% Serverless GitHub Actions</span>
+          <span class="highlight-pill blue">✓ Multi-Platform Distribution</span>
+        </div>
+      </div>
+    </section>
+
+    <!-- Recent Episodes Archive Section -->
+    <section class="archive-section">
+      <div class="archive-header">
+        <div>
+          <h3 class="archive-title">Recent Automated Episodes</h3>
+          <p class="archive-subtitle">Archive of stories generated and published by the autonomous pipeline.</p>
+        </div>
+        <span class="meta-tag" id="archive-count-tag">Loading Archive...</span>
+      </div>
+
+      <div class="archive-grid" id="archive-grid">
+        <!-- Dynamically rendered and populated -->
+      </div>
+    </section>
+  </main>
+
+  <!-- Footer -->
+  <footer>
+    <span>NextAI Apps Studio · AI Tech Videos</span>
+    <span>·</span>
+    <a href="https://nextai-apps.com/">Studio Hub</a>
+    <span>·</span>
+    <a href="https://aishort.nextai-apps.com/">AIShort</a>
+    <span>·</span>
+    <a href="https://aurasentinel.nextai-apps.com/">Aura Sentinel</a>
+    <span>·</span>
+    <span>Engineered with $0 Infra Cost</span>
+  </footer>
+
+  <script>
+    let archiveData = [];
+
+    function renderArchive(items) {
+      const grid = document.getElementById('archive-grid');
+      if (!grid) return;
+
+      grid.innerHTML = items.map((item, idx) => {
+        const formattedDate = new Date(item.postedAt).toLocaleDateString(undefined, { month: 'short', day: 'numeric' });
+
+        return `
+          <div class="archive-card" onclick="selectEpisode('${item.storyId}')" data-id="${item.storyId}">
+            <div class="archive-card-top">
+              <span class="archive-card-tag">🎬 Episode #${items.length - idx}</span>
+              <span class="archive-card-dur">${item.durationSeconds || 30}s</span>
+            </div>
+            <div class="archive-card-title">${escapeHtml(item.videoTitle || item.headline)}</div>
+            <div class="archive-card-desc">${escapeHtml(item.headline)}</div>
+            <div class="archive-card-footer">
+              <span>${formattedDate}</span>
+              <span class="archive-play-btn">Watch Reel ▶</span>
+            </div>
+          </div>
+        `;
+      }).join('');
+    }
+
+    function selectEpisode(storyId) {
+      const story = archiveData.find(item => item.storyId === storyId);
+      if (!story) return;
+
+      const ytId = story.youtubeId || (story.youtubeUrl && story.youtubeUrl.includes('/shorts/') ? story.youtubeUrl.split('/shorts/')[1].split('?')[0] : 'PiqtBoq419Q');
+
+      // Update phone iframe
+      const iframe = document.getElementById('featured-iframe');
+      if (iframe && ytId) {
+        iframe.src = 'https://www.youtube-nocookie.com/embed/' + ytId + '?rel=0&modestbranding=1&autoplay=1';
+      }
+
+      // Update titles
+      document.getElementById('active-episode-title').textContent = story.videoTitle || story.headline;
+      document.getElementById('active-episode-headline').textContent = story.headline;
+      document.getElementById('active-duration').textContent = (story.durationSeconds || 30) + 's';
+      document.getElementById('active-date').textContent = new Date(story.postedAt).toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' });
+
+      // Update CTA links
+      const ytUrl = story.youtubeUrl || 'https://youtube.com/shorts/' + ytId;
+      document.getElementById('primary-yt-btn').href = ytUrl;
+      document.getElementById('quick-yt-link').href = ytUrl;
+
+      if (story.instagramUrl) {
+        document.getElementById('quick-ig-link').href = story.instagramUrl;
+        document.getElementById('quick-ig-link').style.display = 'inline';
+      } else {
+        document.getElementById('quick-ig-link').style.display = 'none';
+      }
+
+      // Scroll to video smoothly on mobile
+      if (window.innerWidth < 860) {
+        document.querySelector('.showcase-grid').scrollIntoView({ behavior: 'smooth' });
+      }
+    }
+
+    function escapeHtml(str) {
+      if (!str) return '';
+      return str.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+    }
+
+    // Live sync with GitHub repository posted_archive.json
+    async function syncWithGitHubLedger() {
+      try {
+        const res = await fetch('https://raw.githubusercontent.com/sverma9312/nextai-video-generator/main/data/posted_archive.json');
+        if (!res.ok) return;
+        const liveData = await res.json();
+        if (Array.isArray(liveData) && liveData.length > 0) {
+          archiveData = liveData.map(item => {
+            const ytId = item.youtubeUrl && item.youtubeUrl.includes('/shorts/')
+              ? item.youtubeUrl.split('/shorts/')[1].split('?')[0]
+              : '';
+            return { ...item, youtubeId: ytId };
+          });
+          renderArchive(archiveData);
+          document.getElementById('archive-count-tag').textContent = archiveData.length + ' Episodes Recorded';
+        }
+      } catch (e) {
+        console.warn('Live GitHub sync skipped:', e);
+      }
+    }
+
+    syncWithGitHubLedger();
+  </script>
+</body>
+</html>
