@@ -2,8 +2,8 @@ name: Daily Video Generator (Shorts & Reels)
 
 on:
   schedule:
-    # Runs daily at 09:00 UTC (14:30 IST / 02:00 PST) - peak engagement window
-    - cron: '0 9 * * *'
+    # Runs twice daily: 04:00 UTC (09:30 AM IST) & 14:00 UTC (07:30 PM IST)
+    - cron: '0 4,14 * * *'
   workflow_dispatch:
     inputs:
       force:
@@ -77,7 +77,7 @@ jobs:
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: daily-vertical-video
+          name: daily-vertical-video-${{ github.run_number }}
           path: |
             out/*.mp4
             build/*_audio.mp3
