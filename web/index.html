@@ -667,7 +667,7 @@
 
     <div class="nav-actions">
       <a href="https://aishort.nextai-apps.com/" class="nav-btn" target="_blank" rel="noopener">AIShort App ↗</a>
-      <a href="https://github.com/sverma9312/nextai-video-generator" class="nav-btn" target="_blank" rel="noopener">GitHub Pipeline ↗</a>
+      <a href="https://nextai-apps.com/" class="nav-btn">Studio Hub ↗</a>
     </div>
   </header>
 
@@ -834,13 +834,14 @@
       const grid = document.getElementById('archive-grid');
       if (!grid) return;
 
-      grid.innerHTML = items.map((item, idx) => {
+      const validItems = items.filter(item => item.youtubeUrl || item.instagramUrl);
+      let html = validItems.map((item, idx) => {
         const formattedDate = new Date(item.postedAt).toLocaleDateString(undefined, { month: 'short', day: 'numeric' });
 
         return `
           <div class="archive-card" onclick="selectEpisode('${item.storyId}')" data-id="${item.storyId}">
             <div class="archive-card-top">
-              <span class="archive-card-tag">🎬 Episode #${items.length - idx}</span>
+              <span class="archive-card-tag">🎬 Episode #${validItems.length - idx}</span>
               <span class="archive-card-dur">${item.durationSeconds || 30}s</span>
             </div>
             <div class="archive-card-title">${escapeHtml(item.videoTitle || item.headline)}</div>
@@ -852,6 +853,25 @@
           </div>
         `;
       }).join('');
+
+      // Add Next Scheduled Broadcast card
+      html += `
+        <div class="archive-card" style="border-style: dashed; opacity: 0.85; background: rgba(168, 85, 247, 0.03);">
+          <div class="archive-card-top">
+            <span class="archive-card-tag" style="background: rgba(16, 185, 129, 0.12); color: #34D399; border-color: rgba(16, 185, 129, 0.3);">⚡ Next Broadcast</span>
+            <span class="archive-card-dur" style="color: #34D399;">2x Daily</span>
+          </div>
+          <div class="archive-card-title">Autonomous Generation Scheduled</div>
+          <div class="archive-card-desc">Scheduled at 04:00 & 14:00 UTC. The AI pipeline synthesizes, voices, renders, and publishes new reels with zero human intervention.</div>
+          <div class="archive-card-footer">
+            <span>Serverless Bot</span>
+            <span style="color: #34D399; font-weight: 600;">● Active</span>
+          </div>
+        </div>
+      `;
+
+      grid.innerHTML = html;
+      document.getElementById('archive-count-tag').textContent = validItems.length + ' Episode' + (validItems.length > 1 ? 's' : '') + ' Published';
     }
 
     function selectEpisode(storyId) {
@@ -902,14 +922,18 @@
         if (!res.ok) return;
         const liveData = await res.json();
         if (Array.isArray(liveData) && liveData.length > 0) {
-          archiveData = liveData.map(item => {
-            const ytId = item.youtubeUrl && item.youtubeUrl.includes('/shorts/')
-              ? item.youtubeUrl.split('/shorts/')[1].split('?')[0]
-              : '';
-            return { ...item, youtubeId: ytId };
-          });
-          renderArchive(archiveData);
-          document.getElementById('archive-count-tag').textContent = archiveData.length + ' Episodes Recorded';
+          const valid = liveData.filter(item => item.youtubeUrl || item.instagramUrl);
+          if (valid.length > 0) {
+            archiveData = valid.map(item => {
+              const ytId = item.youtubeUrl && item.youtubeUrl.includes('/shorts/')
+                ? item.youtubeUrl.split('/shorts/')[1].split('?')[0]
+                : (item.youtubeId || 'PiqtBoq419Q');
+              return { ...item, youtubeId: ytId };
+            });
+            renderArchive(archiveData);
+            // Default to the first (latest) real episode
+            selectEpisode(archiveData[0].storyId);
+          }
         }
       } catch (e) {
         console.warn('Live GitHub sync skipped:', e);
@@ -920,3 +944,4 @@
   </script>
 </body>
 </html>
+
