@@ -480,7 +480,7 @@ export const DynamicVisualStage: React.FC<DynamicVisualStageProps> = ({ story, s
                   boxShadow: '0 0 8px #38bdf8',
                 }}
               />
-              CORE CAPABILITY // 01
+              KEY BREAKTHROUGH
             </div>
 
             <div
@@ -617,7 +617,7 @@ export const DynamicVisualStage: React.FC<DynamicVisualStageProps> = ({ story, s
                   boxShadow: '0 0 8px #a78bfa',
                 }}
               />
-              INDUSTRY IMPACT // 02
+              WHY IT MATTERS
             </div>
 
             <div
