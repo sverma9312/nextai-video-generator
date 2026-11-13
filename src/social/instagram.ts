@@ -1,3 +1,4 @@
+import fsp from 'node:fs/promises';
 import type { SocialPublishRequest, PlatformPublishResult } from './types.js';
 
 export async function uploadToInstagramReels(
@@ -28,19 +29,7 @@ export async function uploadToInstagramReels(
     };
   }
 
-  // Meta Graph API requires a publicly reachable HTTPS URL for video ingestion
-  if (!publicHostedVideoUrl) {
-    console.log('ℹ️ [Instagram Upload] Instagram Reels requires a public video URL (from GitHub release or CDN). Skipping direct upload.');
-    return {
-      platform: 'instagram',
-      success: false,
-      skipped: true,
-      error: 'No public video URL available for Meta Graph API container creation.',
-    };
-  }
-
   try {
-    console.log('📸 [Instagram Upload] Creating Reels container via Meta Graph API...');
     const cleanTopic = (request.topic || request.title).replace(/#Shorts/gi, '').trim();
     const sourceLine = request.sourceName ? `\n🏢 Source: ${request.sourceName}` : '';
     const caption = [
@@ -54,35 +43,90 @@ export async function uploadToInstagramReels(
       request.tags.join(' '),
     ].join('\n');
 
-    const containerUrl = `https://graph.facebook.com/v19.0/${accountId}/media`;
-    const containerRes = await fetch(containerUrl, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        media_type: 'REELS',
-        video_url: publicHostedVideoUrl,
-        caption,
-        access_token: accessToken,
-      }),
-    });
+    let containerId: string;
 
-    if (!containerRes.ok) {
-      const errText = await containerRes.text();
-      throw new Error(`Failed to create Instagram container: HTTP ${containerRes.status} ${errText}`);
+    if (publicHostedVideoUrl) {
+      // Method A: Ingest via publicly reachable URL
+      console.log('📸 [Instagram Upload] Creating Reels container via public URL...');
+      const containerUrl = `https://graph.facebook.com/v19.0/${accountId}/media`;
+      const containerRes = await fetch(containerUrl, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          media_type: 'REELS',
+          video_url: publicHostedVideoUrl,
+          caption,
+          access_token: accessToken,
+        }),
+      });
+
+      if (!containerRes.ok) {
+        const errText = await containerRes.text();
+        throw new Error(`Failed to create Instagram container: HTTP ${containerRes.status} ${errText}`);
+      }
+
+      const { id } = (await containerRes.json()) as { id: string };
+      containerId = id;
+    } else {
+      // Method B: Direct Resumable Binary Upload from local disk
+      console.log('📸 [Instagram Upload] Initializing direct binary Reels upload session...');
+      const stat = await fsp.stat(request.videoPath);
+      const fileSize = stat.size;
+
+      const initUrl = `https://graph.facebook.com/v19.0/${accountId}/media`;
+      const initRes = await fetch(initUrl, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          media_type: 'REELS',
+          upload_type: 'resumable',
+          caption,
+          access_token: accessToken,
+        }),
+      });
+
+      if (!initRes.ok) {
+        const errText = await initRes.text();
+        throw new Error(`Failed to initialize direct Instagram upload session: HTTP ${initRes.status} ${errText}`);
+      }
+
+      const initData = (await initRes.json()) as { id: string; uri?: string };
+      containerId = initData.id;
+      const uploadUri = initData.uri || `https://rupload.facebook.com/ig-reels-upload/v19.0/${containerId}`;
+
+      console.log(`📤 [Instagram Upload] Uploading video binary (${(fileSize / (1024 * 1024)).toFixed(2)} MB)...`);
+      const fileBuffer = await fsp.readFile(request.videoPath);
+
+      const uploadRes = await fetch(uploadUri, {
+        method: 'POST',
+        headers: {
+          Authorization: `OAuth ${accessToken}`,
+          offset: '0',
+          file_size: fileSize.toString(),
+          'Content-Type': 'application/octet-stream',
+        },
+        body: fileBuffer,
+      });
+
+      if (!uploadRes.ok) {
+        const errText = await uploadRes.text();
+        throw new Error(`Failed to upload video bytes to Meta: HTTP ${uploadRes.status} ${errText}`);
+      }
+
+      console.log('✅ [Instagram Upload] Video bytes uploaded successfully to Meta.');
     }
 
-    const { id: containerId } = (await containerRes.json()) as { id: string };
-
-    // Poll container processing status (max 60 seconds)
+    // Poll container processing status (max 90 seconds)
     console.log(`⏳ [Instagram Upload] Waiting for media container ${containerId} to finish processing...`);
     let isFinished = false;
-    for (let i = 0; i < 12; i++) {
+    for (let i = 0; i < 18; i++) {
       await new Promise((r) => setTimeout(r, 5000));
       const statusRes = await fetch(
         `https://graph.facebook.com/v19.0/${containerId}?fields=status_code&access_token=${accessToken}`
       );
       if (statusRes.ok) {
         const statusData = (await statusRes.json()) as { status_code: string };
+        console.log(`   Status: ${statusData.status_code} (${(i + 1) * 5}s)`);
         if (statusData.status_code === 'FINISHED') {
           isFinished = true;
           break;
@@ -113,12 +157,32 @@ export async function uploadToInstagramReels(
     }
 
     const { id: publishedMediaId } = (await publishRes.json()) as { id: string };
-    console.log(`🎉 [Instagram Upload] Reel published successfully with ID: ${publishedMediaId}`);
+
+    // Fetch permalink for reporting
+    let permalink: string | undefined;
+    try {
+      const permalinkRes = await fetch(
+        `https://graph.facebook.com/v19.0/${publishedMediaId}?fields=permalink&access_token=${accessToken}`
+      );
+      if (permalinkRes.ok) {
+        const pData = (await permalinkRes.json()) as { permalink?: string };
+        permalink = pData.permalink;
+      }
+    } catch {
+      // Non-fatal
+    }
+
+    console.log(`🎉 [Instagram Upload] Reel published successfully!`);
+    console.log(`   Reel ID:   ${publishedMediaId}`);
+    if (permalink) {
+      console.log(`   Permalink: ${permalink}`);
+    }
 
     return {
       platform: 'instagram',
       success: true,
       id: publishedMediaId,
+      publishedUrl: permalink,
     };
   } catch (err: any) {
     console.error('❌ [Instagram Upload] Error publishing to Instagram:', err.message);
@@ -129,4 +193,3 @@ export async function uploadToInstagramReels(
     };
   }
 }
-
