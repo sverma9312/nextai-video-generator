@@ -18,7 +18,7 @@ export async function generateVideoScript(card: FeedCard): Promise<VideoScript> 
   const ai = new GoogleGenAI({ apiKey });
   const prompt = buildScriptPrompt(card);
 
-  const candidateModels = ['gemini-3.5-flash', 'gemini-3.5-flash-lite'];
+  const candidateModels = ['gemini-3.5-flash', 'gemini-3.5-flash-lite', 'gemini-3.8-flash'];
   let lastError: Error | null = null;
   let response: any = null;
 
