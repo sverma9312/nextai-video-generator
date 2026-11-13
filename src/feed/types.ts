@@ -47,6 +47,19 @@ export interface VideoScriptTag {
   text: string;
 }
 
+export interface VideoScriptUi2 {
+  appTitle?: string;
+  agentAction?: string;
+  featureMetric?: string;
+  status?: string;
+}
+
+export interface VideoScriptUi3 {
+  metricValue?: string;
+  metricLabel?: string;
+  rolloutStage?: string;
+}
+
 export interface VideoScript {
   hook: string;
   corePoints: string[];
@@ -55,6 +68,10 @@ export interface VideoScript {
   videoTitle: string;
   videoDescription: string;
   hashtags: string[];
+  scene2Title?: string;
+  scene3Title?: string;
+  scene2Ui?: VideoScriptUi2;
+  scene3Ui?: VideoScriptUi3;
   scene2Badges?: VideoScriptBadge[];
   scene3Tags?: VideoScriptTag[];
 }

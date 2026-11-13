@@ -6,6 +6,10 @@ on:
     - cron: '0 4,14 * * *'
   workflow_dispatch:
     inputs:
+      search_query:
+        description: 'Story search keyword or headline (e.g. "ChatGPT Wallet")'
+        required: false
+        type: string
       force:
         description: 'Force video generation even if story was already posted'
         required: false
@@ -65,6 +69,9 @@ jobs:
           INSTAGRAM_ACCESS_TOKEN: ${{ secrets.INSTAGRAM_ACCESS_TOKEN }}
         run: |
           FLAGS=""
+          if [ -n "${{ inputs.search_query }}" ]; then
+            FLAGS="$FLAGS --search \"${{ inputs.search_query }}\""
+          fi
           if [ "${{ inputs.force }}" = "true" ]; then
             FLAGS="$FLAGS --force"
           fi

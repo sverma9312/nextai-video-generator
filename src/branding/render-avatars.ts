@@ -35,7 +35,7 @@ async function main() {
         durationInFrames: 1,
         defaultProps: {},
         props: {},
-      },
+      } as any,
       serveUrl: bundled,
       output: outputPath,
       imageFormat: 'png',

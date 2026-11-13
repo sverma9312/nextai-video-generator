@@ -12,8 +12,11 @@ export async function runPipeline(): Promise<void> {
   const args = process.argv.slice(2);
   const isDryRun = args.includes('--dry-run');
   const isForce = args.includes('--force');
+  const isNoPublish = args.includes('--no-publish');
   const storyIdIdx = args.indexOf('--story-id');
   const targetStoryId = storyIdIdx !== -1 && args[storyIdIdx + 1] ? args[storyIdIdx + 1] : undefined;
+  const searchIdx = args.indexOf('--search');
+  const targetSearch = searchIdx !== -1 && args[searchIdx + 1] ? args[searchIdx + 1] : undefined;
 
   console.log('====================================================');
   console.log('🚀 NextAI Video Generator — Autonomous Daily Pipeline');
@@ -21,12 +24,19 @@ export async function runPipeline(): Promise<void> {
   if (targetStoryId) {
     console.log(`   Target Story ID: ${targetStoryId}`);
   }
+  if (targetSearch) {
+    console.log(`   Search Query:    "${targetSearch}"`);
+  }
   console.log(`   Time: ${new Date().toISOString()}`);
   console.log('====================================================\n');
 
   // Step 1: Select top unposted story from AIShort feed
   console.log('📡 [1/5] Ingesting AIShort feed and selecting story...');
-  const story = await selectStoryForVideo({ forceLatest: isForce, storyId: targetStoryId });
+  const story = await selectStoryForVideo({
+    forceLatest: isForce || Boolean(targetSearch || targetStoryId),
+    storyId: targetStoryId,
+    searchQuery: targetSearch,
+  });
   console.log(`   Selected: "${story.headline}" [${story.category}]`);
   console.log(`   Source:   ${story.sourceName} (${story.sourceUrl})\n`);
 
@@ -99,29 +109,40 @@ export async function runPipeline(): Promise<void> {
   });
 
   // Step 6: Autonomous Social Distribution (YouTube & Instagram)
-  console.log('\n🚀 [6/6] Distributing to social platforms...');
-  const publishResults = await publishToAllChannels({
-    videoPath: outVideoPath,
-    title: script.videoTitle,
-    description: script.videoDescription,
-    tags: script.hashtags,
-    topic: story.headline,
-    sourceName: story.sourceName,
-  });
+  if (isNoPublish) {
+    console.log('\n⏩ [6/6] Skipping social distribution (--no-publish passed).');
+    console.log('\n====================================================');
+    console.log('🎉 Video Render Completed Successfully!');
+    console.log(`   MP4 Video:   ${outVideoPath}`);
+    console.log(`   Title:       ${script.videoTitle}`);
+    console.log(`   Description: ${script.videoDescription}`);
+    console.log(`   Hashtags:    ${script.hashtags.join(' ')}`);
+    console.log('====================================================\n');
+  } else {
+    console.log('\n🚀 [6/6] Distributing to social platforms...');
+    const publishResults = await publishToAllChannels({
+      videoPath: outVideoPath,
+      title: script.videoTitle,
+      description: script.videoDescription,
+      tags: script.hashtags,
+      topic: story.headline,
+      sourceName: story.sourceName,
+    });
 
-  console.log('\n====================================================');
-  console.log('🎉 Video Pipeline Completed Successfully!');
-  console.log(`   MP4 Video:   ${outVideoPath}`);
-  console.log(`   Title:       ${script.videoTitle}`);
-  console.log(`   Description: ${script.videoDescription}`);
-  console.log(`   Hashtags:    ${script.hashtags.join(' ')}`);
-  if (publishResults.youtube?.publishedUrl) {
-    console.log(`   YouTube:     ${publishResults.youtube.publishedUrl}`);
+    console.log('\n====================================================');
+    console.log('🎉 Video Pipeline Completed Successfully!');
+    console.log(`   MP4 Video:   ${outVideoPath}`);
+    console.log(`   Title:       ${script.videoTitle}`);
+    console.log(`   Description: ${script.videoDescription}`);
+    console.log(`   Hashtags:    ${script.hashtags.join(' ')}`);
+    if (publishResults.youtube?.publishedUrl) {
+      console.log(`   YouTube:     ${publishResults.youtube.publishedUrl}`);
+    }
+    if (publishResults.instagram?.id) {
+      console.log(`   Instagram:   Reel ID ${publishResults.instagram.id}`);
+    }
+    console.log('====================================================\n');
   }
-  if (publishResults.instagram?.id) {
-    console.log(`   Instagram:   Reel ID ${publishResults.instagram.id}`);
-  }
-  console.log('====================================================\n');
 }
 
 // Execute CLI

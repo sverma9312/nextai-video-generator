@@ -165,9 +165,22 @@ export const DynamicVisualStage: React.FC<DynamicVisualStageProps> = ({ story, s
     config: { damping: 13, mass: 0.85 },
   });
 
-  // Active point text
-  const point1Text = script.corePoints[0] || story.summary || 'Key breakthrough announced in latest briefing.';
-  const point2Text = script.corePoints[1] || 'Major implications for production AI workflows and enterprise scale.';
+  // Resolvers for scene headlines and mockup metadata
+  const scene2Title = script.scene2Title || 'Autonomous Capabilities & Real-Time Workflow';
+  const scene3Title = script.scene3Title || 'Enterprise Rollout & Bank-Grade Security';
+
+  const scene2Ui = {
+    appTitle: script.scene2Ui?.appTitle || `${story.sourceName} • Feature Canvas`,
+    agentAction: script.scene2Ui?.agentAction || 'Autonomous Agent Task Execution',
+    featureMetric: script.scene2Ui?.featureMetric || 'Tokenized Protection',
+    status: script.scene2Ui?.status || 'AGENT ACTIVE',
+  };
+
+  const scene3Ui = {
+    metricValue: script.scene3Ui?.metricValue || '100%',
+    metricLabel: script.scene3Ui?.metricLabel || 'Protected & Verified',
+    rolloutStage: script.scene3Ui?.rolloutStage || 'Production Rollout',
+  };
 
   return (
     <div
@@ -417,261 +430,476 @@ export const DynamicVisualStage: React.FC<DynamicVisualStageProps> = ({ story, s
       )}
 
       {/* ========================================================= */}
-      {/* SCENE 2: CORE POINT 1 - FEATURE BREAKDOWN CARD           */}
+      {/* SCENE 2: CORE POINT 1 - INTERACTIVE APP & FEATURE CANVAS */}
       {/* ========================================================= */}
       {currentScene === 2 && (
         <div
           style={{
-            position: 'relative',
-            width: 960,
-            height: 680,
-            borderRadius: 36,
-            backgroundColor: '#0c0f1a',
-            border: '2px solid rgba(56, 189, 248, 0.5)',
-            boxShadow: '0 30px 70px rgba(0, 0, 0, 0.8), 0 0 50px rgba(56, 189, 248, 0.25)',
-            padding: '48px 44px',
             display: 'flex',
             flexDirection: 'column',
-            justifyContent: 'space-between',
-            boxSizing: 'border-box',
+            gap: 20,
             transform: `scale(${s2Entrance})`,
             opacity: s2ExitProgress,
-            overflow: 'hidden',
+            transformOrigin: 'center center',
           }}
         >
-          {/* Subtle animated background gradient */}
+          {/* Visual App Container */}
           <div
             style={{
-              position: 'absolute',
-              top: -100,
-              right: -100,
-              width: 400,
-              height: 400,
-              borderRadius: '50%',
-              background: 'radial-gradient(circle, rgba(56, 189, 248, 0.18) 0%, transparent 70%)',
-              filter: 'blur(50px)',
+              position: 'relative',
+              width: 960,
+              height: 520,
+              borderRadius: 32,
+              backgroundColor: '#0c0f1a',
+              border: '1.5px solid rgba(56, 189, 248, 0.45)',
+              boxShadow: '0 25px 60px rgba(0, 0, 0, 0.8), 0 0 40px rgba(56, 189, 248, 0.2)',
+              overflow: 'hidden',
+              display: 'flex',
+              flexDirection: 'column',
+              boxSizing: 'border-box',
             }}
-          />
-
-          {/* Top Label */}
-          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+          >
+            {/* Ambient Background Gradient Glow */}
             <div
               style={{
-                display: 'inline-flex',
+                position: 'absolute',
+                top: -80,
+                right: -80,
+                width: 360,
+                height: 360,
+                borderRadius: '50%',
+                background: 'radial-gradient(circle, rgba(56, 189, 248, 0.18) 0%, transparent 70%)',
+                filter: 'blur(45px)',
+              }}
+            />
+
+            {/* HUD Corner Tech Brackets */}
+            <div style={{ position: 'absolute', top: 16, left: 16, width: 20, height: 20, borderTop: '2.5px solid #38bdf8', borderLeft: '2.5px solid #38bdf8', zIndex: 25 }} />
+            <div style={{ position: 'absolute', top: 16, right: 16, width: 20, height: 20, borderTop: '2.5px solid #38bdf8', borderRight: '2.5px solid #38bdf8', zIndex: 25 }} />
+            <div style={{ position: 'absolute', bottom: 16, left: 16, width: 20, height: 20, borderBottom: '2.5px solid #38bdf8', borderLeft: '2.5px solid #38bdf8', zIndex: 25 }} />
+            <div style={{ position: 'absolute', bottom: 16, right: 16, width: 20, height: 20, borderBottom: '2.5px solid #38bdf8', borderRight: '2.5px solid #38bdf8', zIndex: 25 }} />
+
+            {/* Window Header Bar */}
+            <div
+              style={{
+                height: 54,
+                padding: '0 24px',
+                display: 'flex',
                 alignItems: 'center',
-                gap: 10,
-                padding: '8px 20px',
-                borderRadius: 9999,
-                backgroundColor: 'rgba(56, 189, 248, 0.15)',
-                border: '1px solid rgba(56, 189, 248, 0.4)',
-                color: '#38bdf8',
-                fontSize: 18,
-                fontWeight: 800,
-                letterSpacing: '0.14em',
-                textTransform: 'uppercase',
+                justifyContent: 'space-between',
+                borderBottom: '1px solid rgba(255, 255, 255, 0.08)',
+                backgroundColor: 'rgba(255, 255, 255, 0.02)',
+                zIndex: 20,
               }}
             >
-              <span
-                style={{
-                  width: 8,
-                  height: 8,
-                  borderRadius: '50%',
-                  backgroundColor: '#38bdf8',
-                  boxShadow: '0 0 8px #38bdf8',
-                }}
-              />
-              KEY BREAKTHROUGH
-            </div>
+              {/* Traffic light window controls */}
+              <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
+                <span style={{ width: 12, height: 12, borderRadius: '50%', backgroundColor: '#ef4444' }} />
+                <span style={{ width: 12, height: 12, borderRadius: '50%', backgroundColor: '#eab308' }} />
+                <span style={{ width: 12, height: 12, borderRadius: '50%', backgroundColor: '#22c55e' }} />
+              </div>
 
-            <div
-              style={{
-                fontSize: 18,
-                fontWeight: 700,
-                color: '#94a3b8',
-                letterSpacing: '0.12em',
-              }}
-            >
-              {scene2CategoryTag}
-            </div>
-          </div>
-
-          {/* Central Point Content */}
-          <div style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
-            <div
-              style={{
-                fontSize: 40,
-                fontWeight: 800,
-                lineHeight: 1.3,
-                color: '#ffffff',
-                textShadow: '0 2px 15px rgba(0,0,0,0.8)',
-              }}
-            >
-              {point1Text}
-            </div>
-          </div>
-
-          {/* Feature Highlight Metric Pills */}
-          <div style={{ display: 'flex', gap: 16 }}>
-            {scene2Badges.map((badge, idx) => (
+              {/* Title Bar Pill */}
               <div
-                key={idx}
                 style={{
-                  flex: 1,
-                  padding: '18px 24px',
-                  borderRadius: 20,
-                  backgroundColor: 'rgba(255, 255, 255, 0.04)',
-                  border: '1px solid rgba(255, 255, 255, 0.1)',
                   display: 'flex',
                   alignItems: 'center',
-                  gap: 16,
+                  gap: 8,
+                  padding: '6px 16px',
+                  borderRadius: 9999,
+                  backgroundColor: 'rgba(56, 189, 248, 0.12)',
+                  border: '1px solid rgba(56, 189, 248, 0.3)',
+                  color: '#38bdf8',
+                  fontSize: 15,
+                  fontWeight: 700,
+                  letterSpacing: '0.04em',
                 }}
               >
+                <span>⚡</span>
+                <span>{scene2Ui.appTitle}</span>
+              </div>
+
+              {/* Status Badge */}
+              <div
+                style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: 6,
+                  fontSize: 13,
+                  fontWeight: 800,
+                  color: '#10b981',
+                  letterSpacing: '0.08em',
+                }}
+              >
+                <span style={{ width: 8, height: 8, borderRadius: '50%', backgroundColor: '#10b981', boxShadow: '0 0 8px #10b981' }} />
+                {scene2Ui.status}
+              </div>
+            </div>
+
+            {/* Interactive Feature Canvas Body */}
+            <div
+              style={{
+                flex: 1,
+                padding: '24px 32px',
+                display: 'flex',
+                flexDirection: 'column',
+                justifyContent: 'space-between',
+                zIndex: 20,
+              }}
+            >
+              {/* Agent Command & Action Stream */}
+              <div
+                style={{
+                  padding: '20px 24px',
+                  borderRadius: 20,
+                  backgroundColor: 'rgba(15, 23, 42, 0.75)',
+                  border: '1px solid rgba(56, 189, 248, 0.25)',
+                  display: 'flex',
+                  flexDirection: 'column',
+                  gap: 14,
+                }}
+              >
+                {/* Agent Header */}
+                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+                    <div
+                      style={{
+                        width: 36,
+                        height: 36,
+                        borderRadius: 10,
+                        backgroundColor: 'rgba(56, 189, 248, 0.2)',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        fontSize: 18,
+                      }}
+                    >
+                      🤖
+                    </div>
+                    <div>
+                      <div style={{ fontSize: 13, color: '#94a3b8', fontWeight: 600 }}>AUTONOMOUS AGENT RUNTIME</div>
+                      <div style={{ fontSize: 17, color: '#f1f5f9', fontWeight: 800 }}>{scene2CategoryTag}</div>
+                    </div>
+                  </div>
+
+                  <div
+                    style={{
+                      padding: '4px 12px',
+                      borderRadius: 8,
+                      backgroundColor: 'rgba(16, 185, 129, 0.15)',
+                      border: '1px solid rgba(16, 185, 129, 0.3)',
+                      color: '#10b981',
+                      fontSize: 12,
+                      fontWeight: 800,
+                    }}
+                  >
+                    VERIFIED SECURE
+                  </div>
+                </div>
+
+                {/* Simulated Action Prompt */}
                 <div
                   style={{
-                    fontSize: 28,
-                    width: 52,
-                    height: 52,
+                    padding: '12px 18px',
                     borderRadius: 14,
-                    backgroundColor: `${badge.color}26`,
+                    backgroundColor: 'rgba(0, 0, 0, 0.4)',
+                    border: '1px solid rgba(255, 255, 255, 0.08)',
                     display: 'flex',
                     alignItems: 'center',
-                    justifyContent: 'center',
+                    gap: 12,
                   }}
                 >
-                  {badge.icon}
-                </div>
-                <div>
-                  <div style={{ fontSize: 13, color: '#94a3b8', fontWeight: 600, letterSpacing: '0.08em' }}>
-                    {badge.label}
-                  </div>
-                  <div style={{ fontSize: 20, color: '#ffffff', fontWeight: 800 }}>
-                    {badge.value}
-                  </div>
+                  <span style={{ color: '#38bdf8', fontSize: 20, fontWeight: 800 }}>&gt;</span>
+                  <span style={{ color: '#e2e8f0', fontSize: 18, fontWeight: 700 }}>{scene2Ui.agentAction}</span>
                 </div>
               </div>
-            ))}
+
+              {/* Feature Highlight Metric Pills */}
+              <div style={{ display: 'flex', gap: 16 }}>
+                {scene2Badges.map((badge, idx) => (
+                  <div
+                    key={idx}
+                    style={{
+                      flex: 1,
+                      padding: '14px 20px',
+                      borderRadius: 18,
+                      backgroundColor: 'rgba(255, 255, 255, 0.04)',
+                      border: '1px solid rgba(255, 255, 255, 0.1)',
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: 14,
+                    }}
+                  >
+                    <div
+                      style={{
+                        fontSize: 24,
+                        width: 44,
+                        height: 44,
+                        borderRadius: 12,
+                        backgroundColor: `${badge.color}26`,
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                      }}
+                    >
+                      {badge.icon}
+                    </div>
+                    <div>
+                      <div style={{ fontSize: 12, color: '#94a3b8', fontWeight: 600, letterSpacing: '0.08em' }}>
+                        {badge.label}
+                      </div>
+                      <div style={{ fontSize: 18, color: '#ffffff', fontWeight: 800 }}>
+                        {badge.value}
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+
+          {/* Headline Below App Container (Punchy 3-5 words, no narration repetition!) */}
+          <div
+            style={{
+              color: '#ffffff',
+              fontSize: 34,
+              fontWeight: 800,
+              lineHeight: 1.25,
+              textAlign: 'center',
+              textShadow: '0 4px 20px rgba(0, 0, 0, 0.9)',
+              padding: '0 16px',
+            }}
+          >
+            {scene2Title}
           </div>
         </div>
       )}
 
       {/* ========================================================= */}
-      {/* SCENE 3: CORE POINT 2 - IMPACT & ADVANTAGE CARD          */}
+      {/* SCENE 3: CORE POINT 2 - IMPACT & TELEMETRY DASHBOARD     */}
       {/* ========================================================= */}
       {currentScene === 3 && (
         <div
           style={{
-            position: 'relative',
-            width: 960,
-            height: 680,
-            borderRadius: 36,
-            backgroundColor: '#0e0d1a',
-            border: '2px solid rgba(139, 92, 246, 0.5)',
-            boxShadow: '0 30px 70px rgba(0, 0, 0, 0.8), 0 0 50px rgba(139, 92, 246, 0.25)',
-            padding: '48px 44px',
             display: 'flex',
             flexDirection: 'column',
-            justifyContent: 'space-between',
-            boxSizing: 'border-box',
+            gap: 20,
             transform: `scale(${s3Entrance})`,
-            overflow: 'hidden',
+            transformOrigin: 'center center',
           }}
         >
-          {/* Subtle animated violet glow */}
+          {/* Visual App Container */}
           <div
             style={{
-              position: 'absolute',
-              bottom: -100,
-              left: -100,
-              width: 400,
-              height: 400,
-              borderRadius: '50%',
-              background: 'radial-gradient(circle, rgba(139, 92, 246, 0.2) 0%, transparent 70%)',
-              filter: 'blur(50px)',
+              position: 'relative',
+              width: 960,
+              height: 520,
+              borderRadius: 32,
+              backgroundColor: '#0e0d1a',
+              border: '1.5px solid rgba(168, 85, 247, 0.45)',
+              boxShadow: '0 25px 60px rgba(0, 0, 0, 0.8), 0 0 40px rgba(168, 85, 247, 0.2)',
+              overflow: 'hidden',
+              display: 'flex',
+              flexDirection: 'column',
+              boxSizing: 'border-box',
             }}
-          />
-
-          {/* Top Label */}
-          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+          >
+            {/* Ambient Background Violet Glow */}
             <div
               style={{
-                display: 'inline-flex',
-                alignItems: 'center',
-                gap: 10,
-                padding: '8px 20px',
-                borderRadius: 9999,
-                backgroundColor: 'rgba(139, 92, 246, 0.15)',
-                border: '1px solid rgba(139, 92, 246, 0.4)',
-                color: '#a78bfa',
-                fontSize: 18,
-                fontWeight: 800,
-                letterSpacing: '0.14em',
-                textTransform: 'uppercase',
+                position: 'absolute',
+                bottom: -80,
+                left: -80,
+                width: 360,
+                height: 360,
+                borderRadius: '50%',
+                background: 'radial-gradient(circle, rgba(168, 85, 247, 0.22) 0%, transparent 70%)',
+                filter: 'blur(45px)',
               }}
-            >
-              <span
-                style={{
-                  width: 8,
-                  height: 8,
-                  borderRadius: '50%',
-                  backgroundColor: '#a78bfa',
-                  boxShadow: '0 0 8px #a78bfa',
-                }}
-              />
-              WHY IT MATTERS
-            </div>
+            />
 
+            {/* HUD Corner Tech Brackets (Violet theme) */}
+            <div style={{ position: 'absolute', top: 16, left: 16, width: 20, height: 20, borderTop: '2.5px solid #a855f7', borderLeft: '2.5px solid #a855f7', zIndex: 25 }} />
+            <div style={{ position: 'absolute', top: 16, right: 16, width: 20, height: 20, borderTop: '2.5px solid #a855f7', borderRight: '2.5px solid #a855f7', zIndex: 25 }} />
+            <div style={{ position: 'absolute', bottom: 16, left: 16, width: 20, height: 20, borderBottom: '2.5px solid #a855f7', borderLeft: '2.5px solid #a855f7', zIndex: 25 }} />
+            <div style={{ position: 'absolute', bottom: 16, right: 16, width: 20, height: 20, borderBottom: '2.5px solid #a855f7', borderRight: '2.5px solid #a855f7', zIndex: 25 }} />
+
+            {/* Window Header Bar */}
             <div
               style={{
-                fontSize: 18,
-                fontWeight: 700,
-                color: '#10b981',
-                letterSpacing: '0.12em',
+                height: 54,
+                padding: '0 24px',
                 display: 'flex',
                 alignItems: 'center',
-                gap: 6,
+                justifyContent: 'space-between',
+                borderBottom: '1px solid rgba(255, 255, 255, 0.08)',
+                backgroundColor: 'rgba(255, 255, 255, 0.02)',
+                zIndex: 20,
               }}
             >
-              <span style={{ width: 8, height: 8, borderRadius: '50%', backgroundColor: '#10b981' }} />
-              SIGNIFICANT SHIFT
-            </div>
-          </div>
+              {/* Traffic light window controls */}
+              <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
+                <span style={{ width: 12, height: 12, borderRadius: '50%', backgroundColor: '#ef4444' }} />
+                <span style={{ width: 12, height: 12, borderRadius: '50%', backgroundColor: '#eab308' }} />
+                <span style={{ width: 12, height: 12, borderRadius: '50%', backgroundColor: '#22c55e' }} />
+              </div>
 
-          {/* Point 2 Headline */}
-          <div style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
-            <div
-              style={{
-                fontSize: 40,
-                fontWeight: 800,
-                lineHeight: 1.3,
-                color: '#ffffff',
-                textShadow: '0 2px 15px rgba(0,0,0,0.8)',
-              }}
-            >
-              {point2Text}
-            </div>
-          </div>
-
-          {/* 3 Key Takeaway Badges */}
-          <div style={{ display: 'flex', gap: 14 }}>
-            {scene3Tags.map((badge, i) => (
+              {/* Title Bar Pill */}
               <div
-                key={i}
                 style={{
-                  flex: 1,
-                  padding: '14px 16px',
-                  borderRadius: 16,
-                  backgroundColor: 'rgba(255, 255, 255, 0.05)',
-                  border: '1px solid rgba(255, 255, 255, 0.12)',
                   display: 'flex',
                   alignItems: 'center',
-                  justifyContent: 'center',
-                  gap: 10,
+                  gap: 8,
+                  padding: '6px 16px',
+                  borderRadius: 9999,
+                  backgroundColor: 'rgba(168, 85, 247, 0.12)',
+                  border: '1px solid rgba(168, 85, 247, 0.3)',
+                  color: '#a855f7',
+                  fontSize: 15,
+                  fontWeight: 700,
+                  letterSpacing: '0.04em',
                 }}
               >
-                <span style={{ fontSize: 20 }}>{badge.icon}</span>
-                <span style={{ fontSize: 17, fontWeight: 700, color: '#f1f5f9' }}>{badge.text}</span>
+                <span>📊</span>
+                <span>Impact Telemetry &amp; Rollout</span>
               </div>
-            ))}
+
+              {/* Status Badge */}
+              <div
+                style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: 6,
+                  fontSize: 13,
+                  fontWeight: 800,
+                  color: '#a855f7',
+                  letterSpacing: '0.08em',
+                }}
+              >
+                <span style={{ width: 8, height: 8, borderRadius: '50%', backgroundColor: '#a855f7', boxShadow: '0 0 8px #a855f7' }} />
+                {scene3Ui.rolloutStage}
+              </div>
+            </div>
+
+            {/* Impact Dashboard Canvas Body */}
+            <div
+              style={{
+                flex: 1,
+                padding: '24px 32px',
+                display: 'flex',
+                flexDirection: 'column',
+                justifyContent: 'space-between',
+                zIndex: 20,
+              }}
+            >
+              {/* 2 Big Visual Hero Metric Cards */}
+              <div style={{ display: 'flex', gap: 20 }}>
+                {/* Metric Card 1 */}
+                <div
+                  style={{
+                    flex: 1,
+                    padding: '20px 24px',
+                    borderRadius: 20,
+                    backgroundColor: 'rgba(168, 85, 247, 0.08)',
+                    border: '1px solid rgba(168, 85, 247, 0.25)',
+                    display: 'flex',
+                    flexDirection: 'column',
+                    justifyContent: 'center',
+                    alignItems: 'center',
+                    textAlign: 'center',
+                    gap: 6,
+                  }}
+                >
+                  <div
+                    style={{
+                      fontSize: 48,
+                      fontWeight: 900,
+                      letterSpacing: '-0.02em',
+                      background: 'linear-gradient(135deg, #a855f7 0%, #38bdf8 100%)',
+                      WebkitBackgroundClip: 'text',
+                      WebkitTextFillColor: 'transparent',
+                    }}
+                  >
+                    {scene3Ui.metricValue}
+                  </div>
+                  <div style={{ fontSize: 14, color: '#cbd5e1', fontWeight: 700, letterSpacing: '0.08em', textTransform: 'uppercase' }}>
+                    {scene3Ui.metricLabel}
+                  </div>
+                </div>
+
+                {/* Metric Card 2 */}
+                <div
+                  style={{
+                    flex: 1,
+                    padding: '20px 24px',
+                    borderRadius: 20,
+                    backgroundColor: 'rgba(56, 189, 248, 0.08)',
+                    border: '1px solid rgba(56, 189, 248, 0.25)',
+                    display: 'flex',
+                    flexDirection: 'column',
+                    justifyContent: 'center',
+                    alignItems: 'center',
+                    textAlign: 'center',
+                    gap: 6,
+                  }}
+                >
+                  <div
+                    style={{
+                      fontSize: 42,
+                      fontWeight: 900,
+                      letterSpacing: '-0.02em',
+                      color: '#10b981',
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: 8,
+                    }}
+                  >
+                    <span>⚡</span> READY
+                  </div>
+                  <div style={{ fontSize: 14, color: '#cbd5e1', fontWeight: 700, letterSpacing: '0.08em', textTransform: 'uppercase' }}>
+                    {scene3Ui.rolloutStage}
+                  </div>
+                </div>
+              </div>
+
+              {/* 3 Key Takeaway Badges */}
+              <div style={{ display: 'flex', gap: 14 }}>
+                {scene3Tags.map((badge, i) => (
+                  <div
+                    key={i}
+                    style={{
+                      flex: 1,
+                      padding: '12px 14px',
+                      borderRadius: 16,
+                      backgroundColor: 'rgba(255, 255, 255, 0.04)',
+                      border: '1px solid rgba(255, 255, 255, 0.1)',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      gap: 10,
+                    }}
+                  >
+                    <span style={{ fontSize: 20 }}>{badge.icon}</span>
+                    <span style={{ fontSize: 16, fontWeight: 700, color: '#f1f5f9' }}>{badge.text}</span>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+
+          {/* Headline Below App Container (Punchy 3-5 words, no narration repetition!) */}
+          <div
+            style={{
+              color: '#ffffff',
+              fontSize: 34,
+              fontWeight: 800,
+              lineHeight: 1.25,
+              textAlign: 'center',
+              textShadow: '0 4px 20px rgba(0, 0, 0, 0.9)',
+              padding: '0 16px',
+            }}
+          >
+            {scene3Title}
           </div>
         </div>
       )}

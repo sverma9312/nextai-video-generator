@@ -5,6 +5,7 @@ import type { FeedCard } from './types.js';
 export interface SelectionOptions {
   forceLatest?: boolean;
   storyId?: string;
+  searchQuery?: string;
   categoryPreference?: string[];
 }
 
@@ -52,6 +53,41 @@ export async function selectStoryForVideo(options: SelectionOptions = {}): Promi
       return directMatch;
     }
     console.warn(`⚠️ Requested story ID "${options.storyId}" not found in feed. Falling back to scoring.`);
+  }
+
+  // If a search query or headline was requested, find the best matching story
+  if (options.searchQuery && options.searchQuery.trim().length > 0) {
+    const q = options.searchQuery.toLowerCase().trim();
+    const queryTerms = q.split(/\s+/).filter((t) => t.length > 1);
+
+    // 1. Exact headline or phrase match
+    const exactMatch = cards.find((c) => c.headline.toLowerCase().includes(q));
+    if (exactMatch) {
+      console.log(`🎯 Found exact headline match for "${options.searchQuery}": "${exactMatch.headline}"`);
+      return exactMatch;
+    }
+
+    // 2. All terms match across headline and summary
+    const allTermsMatch = cards.find((c) => {
+      const full = `${c.headline} ${c.summary} ${c.category} ${c.sourceName}`.toLowerCase();
+      return queryTerms.every((term) => full.includes(term));
+    });
+    if (allTermsMatch) {
+      console.log(`🎯 Found full keyword match for "${options.searchQuery}": "${allTermsMatch.headline}"`);
+      return allTermsMatch;
+    }
+
+    // 3. Partial terms match
+    const partialMatch = cards.find((c) => {
+      const full = `${c.headline} ${c.summary}`.toLowerCase();
+      return queryTerms.some((term) => full.includes(term));
+    });
+    if (partialMatch) {
+      console.log(`🎯 Found partial match for "${options.searchQuery}": "${partialMatch.headline}"`);
+      return partialMatch;
+    }
+
+    console.warn(`⚠️ No story matched "${options.searchQuery}" in feed. Falling back to scoring.`);
   }
 
   const archive = await getPostedArchive();
