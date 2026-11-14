@@ -137,7 +137,8 @@ export async function uploadToYouTubeShorts(
 
     // Auto-post top-level comment with app link
     try {
-      console.log('💬 [YouTube Upload] Posting top-level comment...');
+      console.log('💬 [YouTube Upload] Waiting 5s before posting top-level comment...');
+      await new Promise((r) => setTimeout(r, 5000));
       const commentText = `📰 Topic: ${cleanTopic}\n\n📱 Read the full 60-word briefing & sources on AIShort:\n👉 https://aishort.nextai-apps.com/`;
       const commentRes = await fetch(
         'https://www.googleapis.com/youtube/v3/commentThreads?part=snippet',
@@ -163,7 +164,13 @@ export async function uploadToYouTubeShorts(
         console.log('✅ [YouTube Upload] Top comment posted successfully.');
       } else {
         const commentErr = await commentRes.text();
-        console.warn('⚠️ [YouTube Upload] Could not post comment (non-fatal):', commentErr);
+        if (commentErr.includes('insufficientPermissions')) {
+          console.warn('ℹ️ [YouTube Upload] Comment skipped: OAuth token requires "https://www.googleapis.com/auth/youtube.force-ssl" scope to insert comments. The video and description with AIShort link were published successfully.');
+        } else if (commentErr.includes('commentsDisabled')) {
+          console.warn('ℹ️ [YouTube Upload] Comment skipped: Video comments are temporarily disabled while YouTube finishes video encoding. The video and description with AIShort link were published successfully.');
+        } else {
+          console.warn('⚠️ [YouTube Upload] Could not post comment (non-fatal):', commentErr);
+        }
       }
     } catch (commentErr: any) {
       console.warn('⚠️ [YouTube Upload] Could not post comment (non-fatal):', commentErr.message);

@@ -109,6 +109,8 @@ export async function uploadToInstagramReels(
           Authorization: `OAuth ${accessToken}`,
           offset: '0',
           file_size: fileSize.toString(),
+          'Content-Length': fileSize.toString(),
+          'Content-Type': 'application/octet-stream',
         },
         body: fileBuffer,
       });
@@ -127,16 +129,16 @@ export async function uploadToInstagramReels(
     for (let i = 0; i < 18; i++) {
       await new Promise((r) => setTimeout(r, 5000));
       const statusRes = await fetch(
-        `https://graph.facebook.com/v19.0/${containerId}?fields=status_code&access_token=${accessToken}`
+        `https://graph.facebook.com/v19.0/${containerId}?fields=status_code,status&access_token=${accessToken}`
       );
       if (statusRes.ok) {
-        const statusData = (await statusRes.json()) as { status_code: string };
-        console.log(`   Status: ${statusData.status_code} (${(i + 1) * 5}s)`);
+        const statusData = (await statusRes.json()) as { status_code: string; status?: string };
+        console.log(`   Status: ${statusData.status_code} (${(i + 1) * 5}s)${statusData.status ? ` - ${statusData.status}` : ''}`);
         if (statusData.status_code === 'FINISHED') {
           isFinished = true;
           break;
         } else if (statusData.status_code === 'ERROR') {
-          throw new Error('Instagram media container processing returned status ERROR.');
+          throw new Error(`Instagram media container processing returned ERROR: ${statusData.status || 'unknown processing error'}`);
         }
       }
     }
