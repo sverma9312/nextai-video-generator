@@ -10,13 +10,32 @@ import type { VideoCompositionProps } from './video/types.js';
 
 export async function runPipeline(): Promise<void> {
   const args = process.argv.slice(2);
-  const isDryRun = args.includes('--dry-run');
-  const isForce = args.includes('--force');
+  const isDryRun = args.includes('--dry-run') || process.env.DRY_RUN === 'true';
+  const isForce = args.includes('--force') || process.env.FORCE_RUN === 'true';
   const isNoPublish = args.includes('--no-publish');
+
   const storyIdIdx = args.indexOf('--story-id');
-  const targetStoryId = storyIdIdx !== -1 && args[storyIdIdx + 1] ? args[storyIdIdx + 1] : undefined;
+  let targetStoryId = storyIdIdx !== -1 && args[storyIdIdx + 1] ? args[storyIdIdx + 1] : undefined;
+  if (!targetStoryId && process.env.STORY_ID) {
+    targetStoryId = process.env.STORY_ID.trim();
+  }
+
   const searchIdx = args.indexOf('--search');
-  const targetSearch = searchIdx !== -1 && args[searchIdx + 1] ? args[searchIdx + 1] : undefined;
+  let targetSearch: string | undefined;
+  if (searchIdx !== -1) {
+    const searchTerms: string[] = [];
+    for (let i = searchIdx + 1; i < args.length; i++) {
+      if (args[i].startsWith('--')) break;
+      const clean = args[i].replace(/^["']|["']$/g, '').trim();
+      if (clean) searchTerms.push(clean);
+    }
+    if (searchTerms.length > 0) {
+      targetSearch = searchTerms.join(' ').trim();
+    }
+  }
+  if (!targetSearch && process.env.SEARCH_QUERY && process.env.SEARCH_QUERY.trim().length > 0) {
+    targetSearch = process.env.SEARCH_QUERY.replace(/^["']|["']$/g, '').trim();
+  }
 
   console.log('====================================================');
   console.log('🚀 NextAI Video Generator — Autonomous Daily Pipeline');
@@ -137,9 +156,20 @@ export async function runPipeline(): Promise<void> {
     console.log(`   Hashtags:    ${script.hashtags.join(' ')}`);
     if (publishResults.youtube?.publishedUrl) {
       console.log(`   YouTube:     ${publishResults.youtube.publishedUrl}`);
+    } else if (publishResults.youtube?.skipped) {
+      console.log(`   YouTube:     SKIPPED (${publishResults.youtube.error || 'Publishing paused'})`);
+    } else if (publishResults.youtube?.error) {
+      console.log(`   YouTube:     FAILED (${publishResults.youtube.error})`);
     }
-    if (publishResults.instagram?.id) {
+
+    if (publishResults.instagram?.publishedUrl) {
+      console.log(`   Instagram:   ${publishResults.instagram.publishedUrl}`);
+    } else if (publishResults.instagram?.id) {
       console.log(`   Instagram:   Reel ID ${publishResults.instagram.id}`);
+    } else if (publishResults.instagram?.skipped) {
+      console.log(`   Instagram:   SKIPPED (${publishResults.instagram.error || 'Publishing paused'})`);
+    } else if (publishResults.instagram?.error) {
+      console.log(`   Instagram:   FAILED (${publishResults.instagram.error})`);
     }
     console.log('====================================================\n');
   }

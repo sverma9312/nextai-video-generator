@@ -20,6 +20,16 @@ on:
         required: false
         type: boolean
         default: false
+      publish_youtube:
+        description: 'Publish to YouTube Shorts'
+        required: false
+        type: boolean
+        default: true
+      publish_instagram:
+        description: 'Publish to Instagram Reels'
+        required: false
+        type: boolean
+        default: true
 
 permissions:
   contents: write
@@ -59,26 +69,18 @@ jobs:
           GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
           VIDEO_VOICE_NAME: 'en-US-AndrewMultilingualNeural'
           VIDEO_VOICE_RATE: '+6%'
-          ENABLE_YOUTUBE_PUBLISH: ${{ vars.ENABLE_YOUTUBE_PUBLISH || 'false' }}
-          ENABLE_INSTAGRAM_PUBLISH: ${{ vars.ENABLE_INSTAGRAM_PUBLISH || 'false' }}
+          SEARCH_QUERY: ${{ inputs.search_query }}
+          FORCE_RUN: ${{ inputs.force }}
+          DRY_RUN: ${{ inputs.dry_run }}
+          ENABLE_YOUTUBE_PUBLISH: ${{ (github.event_name == 'workflow_dispatch' && inputs.publish_youtube) || vars.ENABLE_YOUTUBE_PUBLISH || secrets.ENABLE_YOUTUBE_PUBLISH || 'false' }}
+          ENABLE_INSTAGRAM_PUBLISH: ${{ (github.event_name == 'workflow_dispatch' && inputs.publish_instagram) || vars.ENABLE_INSTAGRAM_PUBLISH || secrets.ENABLE_INSTAGRAM_PUBLISH || 'false' }}
           YOUTUBE_CLIENT_ID: ${{ secrets.YOUTUBE_CLIENT_ID }}
           YOUTUBE_CLIENT_SECRET: ${{ secrets.YOUTUBE_CLIENT_SECRET }}
           YOUTUBE_REFRESH_TOKEN: ${{ secrets.YOUTUBE_REFRESH_TOKEN }}
           YOUTUBE_PRIVACY_STATUS: ${{ vars.YOUTUBE_PRIVACY_STATUS || 'private' }}
           INSTAGRAM_ACCOUNT_ID: ${{ secrets.INSTAGRAM_ACCOUNT_ID }}
           INSTAGRAM_ACCESS_TOKEN: ${{ secrets.INSTAGRAM_ACCESS_TOKEN }}
-        run: |
-          FLAGS=""
-          if [ -n "${{ inputs.search_query }}" ]; then
-            FLAGS="$FLAGS --search \"${{ inputs.search_query }}\""
-          fi
-          if [ "${{ inputs.force }}" = "true" ]; then
-            FLAGS="$FLAGS --force"
-          fi
-          if [ "${{ inputs.dry_run }}" = "true" ]; then
-            FLAGS="$FLAGS --dry-run"
-          fi
-          pnpm generate:latest $FLAGS
+        run: pnpm generate:latest
 
       - name: Upload Rendered Video Artifact
         if: always()
@@ -99,6 +101,7 @@ jobs:
           if [[ -n $(git status -s data/posted_archive.json) ]]; then
             git add data/posted_archive.json
             git commit -m "chore(archive): record published daily video [skip ci]"
+            git pull --rebase origin main
             git push origin main
           else
             echo "No new stories recorded in posted archive."

@@ -52,42 +52,68 @@ export async function selectStoryForVideo(options: SelectionOptions = {}): Promi
     if (directMatch) {
       return directMatch;
     }
-    console.warn(`⚠️ Requested story ID "${options.storyId}" not found in feed. Falling back to scoring.`);
+    throw new Error(
+      `Requested story ID "${options.storyId}" was not found in the AIShort feed (100 latest stories).`
+    );
   }
 
   // If a search query or headline was requested, find the best matching story
   if (options.searchQuery && options.searchQuery.trim().length > 0) {
-    const q = options.searchQuery.toLowerCase().trim();
+    // Strip accidental wrapping quotes (e.g. "ChatGPT Wallet" or 'ChatGPT Wallet')
+    const cleanQuery = options.searchQuery.replace(/^["']|["']$/g, '').trim();
+    const q = cleanQuery.toLowerCase();
     const queryTerms = q.split(/\s+/).filter((t) => t.length > 1);
 
-    // 1. Exact headline or phrase match
-    const exactMatch = cards.find((c) => c.headline.toLowerCase().includes(q));
-    if (exactMatch) {
-      console.log(`🎯 Found exact headline match for "${options.searchQuery}": "${exactMatch.headline}"`);
-      return exactMatch;
+    // 1. Exact phrase match in headline
+    const exactHeadlineMatch = cards.find((c) => c.headline.toLowerCase().includes(q));
+    if (exactHeadlineMatch) {
+      console.log(`🎯 Found exact headline match for "${cleanQuery}": "${exactHeadlineMatch.headline}"`);
+      return exactHeadlineMatch;
     }
 
-    // 2. All terms match across headline and summary
+    // 2. All search terms match across headline
+    const allTermsHeadline = cards.find((c) => {
+      const h = c.headline.toLowerCase();
+      return queryTerms.every((term) => h.includes(term));
+    });
+    if (allTermsHeadline) {
+      console.log(`🎯 Found all-keyword headline match for "${cleanQuery}": "${allTermsHeadline.headline}"`);
+      return allTermsHeadline;
+    }
+
+    // 3. All search terms match across headline and summary
     const allTermsMatch = cards.find((c) => {
       const full = `${c.headline} ${c.summary} ${c.category} ${c.sourceName}`.toLowerCase();
       return queryTerms.every((term) => full.includes(term));
     });
     if (allTermsMatch) {
-      console.log(`🎯 Found full keyword match for "${options.searchQuery}": "${allTermsMatch.headline}"`);
+      console.log(`🎯 Found full keyword match for "${cleanQuery}": "${allTermsMatch.headline}"`);
       return allTermsMatch;
     }
 
-    // 3. Partial terms match
-    const partialMatch = cards.find((c) => {
-      const full = `${c.headline} ${c.summary}`.toLowerCase();
-      return queryTerms.some((term) => full.includes(term));
-    });
-    if (partialMatch) {
-      console.log(`🎯 Found partial match for "${options.searchQuery}": "${partialMatch.headline}"`);
-      return partialMatch;
+    // 4. Any major search term matches (ranked by term count)
+    const scoredMatches = cards
+      .map((c) => {
+        const full = `${c.headline} ${c.summary}`.toLowerCase();
+        const matchCount = queryTerms.filter((term) => full.includes(term)).length;
+        const headlineBonus = queryTerms.some((term) => c.headline.toLowerCase().includes(term)) ? 2 : 0;
+        return { card: c, score: matchCount + headlineBonus };
+      })
+      .filter((m) => m.score > 0)
+      .sort((a, b) => b.score - a.score);
+
+    if (scoredMatches.length > 0) {
+      const best = scoredMatches[0].card;
+      console.log(`🎯 Found best relevant match for "${cleanQuery}": "${best.headline}"`);
+      return best;
     }
 
-    console.warn(`⚠️ No story matched "${options.searchQuery}" in feed. Falling back to scoring.`);
+    const sampleHeadlines = cards.slice(0, 5).map((c) => `   • "${c.headline}"`).join('\n');
+    throw new Error(
+      `No news story matching search query "${cleanQuery}" was found in the AIShort feed (100 latest stories).\n\n` +
+      `Recent headlines available in feed:\n${sampleHeadlines}\n\n` +
+      `Tip: Try a shorter keyword (e.g. "ChatGPT", "Wallet", "OpenAI") or visit https://aishort.nextai-apps.com to check the live headlines.`
+    );
   }
 
   const archive = await getPostedArchive();
