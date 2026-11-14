@@ -16,7 +16,7 @@ export async function synthesizeVoiceover(
   outAudioPath: string,
   voiceName?: string
 ): Promise<TTSResult> {
-  const selectedVoice = voiceName || process.env.VIDEO_VOICE_NAME || 'en-US-AndrewNeural';
+  const selectedVoice = voiceName || process.env.VIDEO_VOICE_NAME || 'en-US-AndrewMultilingualNeural';
   const voiceRate = process.env.VIDEO_VOICE_RATE || '+6%';
 
   const dir = path.dirname(outAudioPath);
