@@ -32,10 +32,17 @@ export async function isStoryPosted(storyId: string): Promise<boolean> {
 
 export async function recordPostedStory(record: PostedRecord): Promise<void> {
   const archive = await getPostedArchive();
-  const exists = archive.some((r) => r.storyId === record.storyId);
-  if (!exists) {
+  const existingIdx = archive.findIndex((r) => r.storyId === record.storyId);
+  if (existingIdx !== -1) {
+    archive[existingIdx] = {
+      ...archive[existingIdx],
+      ...record,
+      youtubeUrl: record.youtubeUrl || archive[existingIdx].youtubeUrl,
+      instagramUrl: record.instagramUrl || archive[existingIdx].instagramUrl,
+    };
+  } else {
     archive.unshift(record);
-    await fs.writeFile(ARCHIVE_FILE, JSON.stringify(archive, null, 2), 'utf-8');
   }
+  await fs.writeFile(ARCHIVE_FILE, JSON.stringify(archive, null, 2), 'utf-8');
 }
 

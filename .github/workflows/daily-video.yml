@@ -6,12 +6,27 @@ on:
     - cron: '0 4,14 * * *'
   workflow_dispatch:
     inputs:
+      retry_last:
+        description: 'Retry uploading last video (skips already posted platforms unless force=true)'
+        required: false
+        type: boolean
+        default: false
+      publish_youtube:
+        description: 'Publish / retry YouTube Shorts'
+        required: false
+        type: boolean
+        default: true
+      publish_instagram:
+        description: 'Publish / retry Instagram Reels'
+        required: false
+        type: boolean
+        default: true
       search_query:
         description: 'Story search keyword or headline (e.g. "ChatGPT Wallet")'
         required: false
         type: string
       force:
-        description: 'Force video generation even if story was already posted'
+        description: 'Force upload even if URL already exists in archive ledger'
         required: false
         type: boolean
         default: false
@@ -20,16 +35,6 @@ on:
         required: false
         type: boolean
         default: false
-      publish_youtube:
-        description: 'Publish to YouTube Shorts'
-        required: false
-        type: boolean
-        default: true
-      publish_instagram:
-        description: 'Publish to Instagram Reels'
-        required: false
-        type: boolean
-        default: true
 
 permissions:
   contents: write
@@ -64,11 +69,31 @@ jobs:
       - name: Install Node dependencies
         run: pnpm install
 
+      - name: Download Previous Video Artifact (Retry Mode)
+        if: ${{ github.event_name == 'workflow_dispatch' && inputs.retry_last }}
+        run: |
+          mkdir -p out build
+          echo "Looking for previous workflow run artifact to reuse rendered video..."
+          PREV_RUN_ID=$(gh run list --workflow="daily-video.yml" --limit 5 --json databaseId -q '.[] | select(.databaseId != ${{ github.run_id }}) | .databaseId' | head -n 1)
+          if [ -n "$PREV_RUN_ID" ]; then
+            echo "Downloading artifacts from run #$PREV_RUN_ID..."
+            gh run download "$PREV_RUN_ID" --dir ./downloaded_artifacts || true
+            find ./downloaded_artifacts -name "*.mp4" -exec cp {} out/ \; || true
+            find ./downloaded_artifacts -name "*_audio.mp3" -exec cp {} build/ \; || true
+            find ./downloaded_artifacts -name "*_subtitles.json" -exec cp {} build/ \; || true
+            rm -rf ./downloaded_artifacts
+          fi
+          echo "Available files in out/:"
+          ls -la out/ || true
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
       - name: Run Video Generation Pipeline
         env:
           GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
           VIDEO_VOICE_NAME: 'en-US-AndrewMultilingualNeural'
           VIDEO_VOICE_RATE: '+6%'
+          RETRY_LAST: ${{ inputs.retry_last }}
           SEARCH_QUERY: ${{ inputs.search_query }}
           FORCE_RUN: ${{ inputs.force }}
           DRY_RUN: ${{ inputs.dry_run }}

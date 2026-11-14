@@ -32,6 +32,7 @@ export interface PostedRecord {
   durationSeconds?: number;
   youtubeUrl?: string;
   youtubeVideoId?: string;
+  instagramUrl?: string;
   instagramMediaId?: string;
   postedAt: string;
 }

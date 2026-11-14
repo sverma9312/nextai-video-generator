@@ -1,18 +1,21 @@
 import path from 'node:path';
+import fs from 'node:fs';
 import fsp from 'node:fs/promises';
 import { selectStoryForVideo } from './feed/selector.js';
 import { generateVideoScript } from './script/generator.js';
 import { synthesizeVoiceover } from './audio/tts.js';
 import { renderVideoToDisk } from './render/renderer.js';
-import { recordPostedStory } from './feed/archive.js';
+import { getPostedArchive, recordPostedStory } from './feed/archive.js';
 import { publishToAllChannels } from './social/publisher.js';
 import type { VideoCompositionProps } from './video/types.js';
+import type { FeedCard } from './feed/types.js';
 
 export async function runPipeline(): Promise<void> {
   const args = process.argv.slice(2);
   const isDryRun = args.includes('--dry-run') || process.env.DRY_RUN === 'true';
   const isForce = args.includes('--force') || process.env.FORCE_RUN === 'true';
   const isNoPublish = args.includes('--no-publish');
+  const isRetryLast = args.includes('--retry-last') || process.env.RETRY_LAST === 'true';
 
   const storyIdIdx = args.indexOf('--story-id');
   let targetStoryId = storyIdIdx !== -1 && args[storyIdIdx + 1] ? args[storyIdIdx + 1] : undefined;
@@ -39,7 +42,7 @@ export async function runPipeline(): Promise<void> {
 
   console.log('====================================================');
   console.log('🚀 NextAI Video Generator — Autonomous Daily Pipeline');
-  console.log(`   Mode: ${isDryRun ? 'DRY-RUN (No MP4 Render)' : 'FULL RENDER'}`);
+  console.log(`   Mode: ${isRetryLast ? 'RETRY LAST VIDEO' : isDryRun ? 'DRY-RUN (No MP4 Render)' : 'FULL RENDER'}`);
   if (targetStoryId) {
     console.log(`   Target Story ID: ${targetStoryId}`);
   }
@@ -49,6 +52,160 @@ export async function runPipeline(): Promise<void> {
   console.log(`   Time: ${new Date().toISOString()}`);
   console.log('====================================================\n');
 
+  // --- RETRY LAST VIDEO MODE ---
+  if (isRetryLast) {
+    console.log('🔄 [Retry Mode] Checking posted archive ledger...');
+    const archive = await getPostedArchive();
+    if (archive.length === 0) {
+      throw new Error('No stories found in posted archive ledger to retry.');
+    }
+
+    const targetRecord = targetStoryId
+      ? archive.find((r) => r.storyId === targetStoryId)
+      : archive[0];
+
+    if (!targetRecord) {
+      throw new Error(`Target story ID "${targetStoryId}" not found in posted archive ledger.`);
+    }
+
+    console.log(`   Target Story: "${targetRecord.headline}" (ID: ${targetRecord.storyId})`);
+    console.log(`   YouTube URL:   ${targetRecord.youtubeUrl || 'NOT PUBLISHED'}`);
+    console.log(`   Instagram URL: ${targetRecord.instagramUrl || 'NOT PUBLISHED'}\n`);
+
+    const isPublishYouTube = process.env.ENABLE_YOUTUBE_PUBLISH === 'true' && !isNoPublish;
+    const isPublishInstagram = process.env.ENABLE_INSTAGRAM_PUBLISH === 'true' && !isNoPublish;
+
+    const needYouTube = isPublishYouTube && (!targetRecord.youtubeUrl || isForce);
+    const needInstagram = isPublishInstagram && (!targetRecord.instagramUrl || isForce);
+
+    if (isPublishYouTube && targetRecord.youtubeUrl && !isForce) {
+      console.log(`ℹ️ [YouTube] Already published at ${targetRecord.youtubeUrl}. Skipping (pass force=true to override).`);
+    }
+    if (isPublishInstagram && targetRecord.instagramUrl && !isForce) {
+      console.log(`ℹ️ [Instagram] Already published at ${targetRecord.instagramUrl}. Skipping (pass force=true to override).`);
+    }
+
+    if (!needYouTube && !needInstagram) {
+      console.log('\n✨ [Retry Complete] All requested platforms are already published for this story.');
+      console.log('   Nothing to retry. Exiting safely without re-rendering.');
+      return;
+    }
+
+    // Check if MP4 already exists on disk
+    let videoPathToPublish: string | null = null;
+    const defaultOutPath = path.resolve(process.cwd(), 'out', `${targetRecord.storyId}.mp4`);
+    if (fs.existsSync(defaultOutPath)) {
+      videoPathToPublish = defaultOutPath;
+    } else if (targetRecord.videoPath && fs.existsSync(targetRecord.videoPath)) {
+      videoPathToPublish = targetRecord.videoPath;
+    }
+
+    let story: FeedCard;
+    try {
+      story = await selectStoryForVideo({ storyId: targetRecord.storyId, forceLatest: true });
+    } catch {
+      story = {
+        id: targetRecord.storyId,
+        headline: targetRecord.headline,
+        summary: targetRecord.headline,
+        category: 'AI Breakthrough',
+        sourceName: 'AIShort News',
+        sourceUrl: 'https://aishort.nextai-apps.com',
+        imageUrl: '',
+        publishedAt: targetRecord.postedAt,
+      };
+    }
+
+    let script: any;
+    if (videoPathToPublish) {
+      console.log(`🎬 Found existing rendered video on disk: ${videoPathToPublish}`);
+      console.log('   Skipping Remotion video rendering (instant dispatch)!\n');
+      script = await generateVideoScript(story);
+    } else {
+      console.log(`⚠️ Video file not found at out/${targetRecord.storyId}.mp4. Re-rendering video...`);
+      script = await generateVideoScript(story);
+      const buildDir = path.resolve(process.cwd(), 'build');
+      const outAudioPath = path.resolve(buildDir, `${story.id}_audio.mp3`);
+      const ttsResult = await synthesizeVoiceover(script.fullSpokenText, outAudioPath);
+      const fps = 30;
+      const durationInFrames = Math.ceil(ttsResult.durationSeconds * fps);
+      const audioBuffer = await fsp.readFile(ttsResult.audioPath);
+      const audioDataUri = `data:audio/mp3;base64,${audioBuffer.toString('base64')}`;
+
+      const inputProps: VideoCompositionProps = {
+        story,
+        script,
+        audioSrc: audioDataUri,
+        words: ttsResult.words,
+        durationInFrames,
+      };
+
+      const outDir = path.resolve(process.cwd(), 'out');
+      await fsp.mkdir(outDir, { recursive: true });
+      videoPathToPublish = path.resolve(outDir, `${story.id}.mp4`);
+      await renderVideoToDisk({
+        inputProps,
+        outputPath: videoPathToPublish,
+      });
+    }
+
+    console.log('🚀 Distributing missing platform(s)...');
+    const publishResults = await publishToAllChannels(
+      {
+        videoPath: videoPathToPublish,
+        title: targetRecord.videoTitle || script.videoTitle,
+        description: script.videoDescription,
+        tags: script.hashtags,
+        topic: story.headline,
+        sourceName: story.sourceName,
+      },
+      undefined,
+      {
+        skipYouTube: !needYouTube,
+        skipInstagram: !needInstagram,
+      }
+    );
+
+    const finalYt = publishResults.youtube?.publishedUrl || targetRecord.youtubeUrl;
+    const finalIg =
+      publishResults.instagram?.publishedUrl ||
+      (publishResults.instagram?.id ? `https://instagram.com/reel/${publishResults.instagram.id}` : undefined) ||
+      targetRecord.instagramUrl;
+
+    await recordPostedStory({
+      ...targetRecord,
+      videoPath: videoPathToPublish,
+      youtubeUrl: finalYt,
+      instagramUrl: finalIg,
+      postedAt: new Date().toISOString(),
+    });
+
+    console.log('\n====================================================');
+    console.log('🎉 Retry Social Distribution Completed!');
+    console.log(`   Story:     "${targetRecord.headline}"`);
+    console.log(`   Video:     ${videoPathToPublish}`);
+    if (publishResults.youtube?.publishedUrl) {
+      console.log(`   YouTube:   PUBLISHED -> ${publishResults.youtube.publishedUrl}`);
+    } else if (publishResults.youtube?.skipped) {
+      console.log(`   YouTube:   SKIPPED (${publishResults.youtube.error || 'Already published or paused'})`);
+    } else if (publishResults.youtube?.error) {
+      console.log(`   YouTube:   FAILED (${publishResults.youtube.error})`);
+    }
+
+    if (publishResults.instagram?.publishedUrl) {
+      console.log(`   Instagram: PUBLISHED -> ${publishResults.instagram.publishedUrl}`);
+    } else if (publishResults.instagram?.id) {
+      console.log(`   Instagram: PUBLISHED -> Reel ID ${publishResults.instagram.id}`);
+    } else if (publishResults.instagram?.skipped) {
+      console.log(`   Instagram: SKIPPED (${publishResults.instagram.error || 'Already published or paused'})`);
+    } else if (publishResults.instagram?.error) {
+      console.log(`   Instagram: FAILED (${publishResults.instagram.error})`);
+    }
+    console.log('====================================================\n');
+    return;
+  }
+
+  // --- STANDARD NEW STORY PIPELINE ---
   // Step 1: Select top unposted story from AIShort feed
   console.log('📡 [1/5] Ingesting AIShort feed and selecting story...');
   const story = await selectStoryForVideo({
@@ -115,7 +272,7 @@ export async function runPipeline(): Promise<void> {
     },
   });
 
-  // Step 5: Update Deduplication Ledger
+  // Step 5: Update Deduplication Ledger (initial record)
   console.log('\n📝 [5/6] Recording story in posted archive ledger...');
   await recordPostedStory({
     storyId: story.id,
@@ -146,6 +303,23 @@ export async function runPipeline(): Promise<void> {
       tags: script.hashtags,
       topic: story.headline,
       sourceName: story.sourceName,
+    });
+
+    const finalYt = publishResults.youtube?.publishedUrl;
+    const finalIg =
+      publishResults.instagram?.publishedUrl ||
+      (publishResults.instagram?.id ? `https://instagram.com/reel/${publishResults.instagram.id}` : undefined);
+
+    await recordPostedStory({
+      storyId: story.id,
+      headline: story.headline,
+      videoTitle: script.videoTitle,
+      videoPath: outVideoPath,
+      audioPath: ttsResult.audioPath,
+      durationSeconds: ttsResult.durationSeconds,
+      postedAt: new Date().toISOString(),
+      youtubeUrl: finalYt,
+      instagramUrl: finalIg,
     });
 
     console.log('\n====================================================');
