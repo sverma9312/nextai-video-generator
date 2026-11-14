@@ -57,7 +57,7 @@ jobs:
       - name: Run Video Generation Pipeline
         env:
           GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
-          VIDEO_VOICE_NAME: 'en-US-AndrewMultilingualNeural'
+          VIDEO_VOICE_NAME: 'en-US-AndrewNeural'
           VIDEO_VOICE_RATE: '+6%'
           ENABLE_YOUTUBE_PUBLISH: ${{ vars.ENABLE_YOUTUBE_PUBLISH || 'false' }}
           ENABLE_INSTAGRAM_PUBLISH: ${{ vars.ENABLE_INSTAGRAM_PUBLISH || 'false' }}
