@@ -1,5 +1,14 @@
 [
   {
+    "storyId": "c_0a0480ca55a9211b",
+    "headline": "Route coding agent requests on Amazon Bedrock with NVIDIA NeMo Switchyard",
+    "videoTitle": "AWS & NVIDIA Cut AI Coding Costs #Shorts",
+    "videoPath": "/home/runner/work/nextai-video-generator/nextai-video-generator/out/c_0a0480ca55a9211b.mp4",
+    "audioPath": "/home/runner/work/nextai-video-generator/nextai-video-generator/build/c_0a0480ca55a9211b_audio.mp3",
+    "durationSeconds": 31.61,
+    "postedAt": "2026-11-14T11:07:32.918Z"
+  },
+  {
     "storyId": "c_1ff828d5ba7633c6",
     "headline": "GS Caltex automates MLOps workflows using Amazon SageMaker Canvas and Pipelines",
     "videoTitle": "GS Caltex Slashes AI Handoffs to Hours #Shorts",
