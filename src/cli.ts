@@ -56,16 +56,39 @@ export async function runPipeline(): Promise<void> {
   if (isRetryLast) {
     console.log('🔄 [Retry Mode] Checking posted archive ledger...');
     const archive = await getPostedArchive();
-    if (archive.length === 0) {
-      throw new Error('No stories found in posted archive ledger to retry.');
+
+    let targetRecord = targetStoryId
+      ? archive.find((r) => r.storyId === targetStoryId)
+      : targetSearch
+        ? archive.find((r) => r.headline.toLowerCase().includes(targetSearch!.toLowerCase()))
+        : archive[0];
+
+    // If not found in archive, try pulling from AIShort feed
+    if (!targetRecord && (targetStoryId || targetSearch || archive.length === 0)) {
+      try {
+        const fallbackStory = await selectStoryForVideo({
+          forceLatest: true,
+          storyId: targetStoryId,
+          searchQuery: targetSearch,
+        });
+        targetRecord = {
+          storyId: fallbackStory.id,
+          headline: fallbackStory.headline,
+          videoTitle: fallbackStory.headline,
+          videoPath: path.resolve(process.cwd(), 'out', `${fallbackStory.id}.mp4`),
+          audioPath: path.resolve(process.cwd(), 'build', `${fallbackStory.id}_audio.mp3`),
+          durationSeconds: 0,
+          postedAt: new Date().toISOString(),
+        };
+      } catch (feedErr) {
+        if (archive.length === 0) {
+          throw new Error('No stories found in posted archive ledger to retry.');
+        }
+      }
     }
 
-    const targetRecord = targetStoryId
-      ? archive.find((r) => r.storyId === targetStoryId)
-      : archive[0];
-
     if (!targetRecord) {
-      throw new Error(`Target story ID "${targetStoryId}" not found in posted archive ledger.`);
+      throw new Error(`Target story "${targetStoryId || targetSearch}" not found in posted archive ledger.`);
     }
 
     console.log(`   Target Story: "${targetRecord.headline}" (ID: ${targetRecord.storyId})`);
