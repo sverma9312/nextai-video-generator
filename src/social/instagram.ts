@@ -93,11 +93,11 @@ export async function uploadToInstagramReels(
   }
 
   if (!accountId || !accessToken) {
-    console.log('ℹ️ [Instagram Upload] Missing INSTAGRAM_ACCOUNT_ID or ACCESS_TOKEN in .env. Skipping upload.');
+    console.error('❌ [Instagram Upload] Missing Instagram credentials in environment (INSTAGRAM_ACCOUNT_ID / ACCESS_TOKEN).');
     return {
       platform: 'instagram',
       success: false,
-      skipped: true,
+      skipped: false,
       error: 'INSTAGRAM_ACCOUNT_ID / ACCESS_TOKEN not configured.',
     };
   }

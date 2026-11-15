@@ -120,14 +120,27 @@ jobs:
           retention-days: 7
 
       - name: Commit Updated Posted Archive Ledger
+        if: always()
         run: |
           git config --local user.email "action@github.com"
           git config --local user.name "NextAI Autonomous Video Bot"
           if [[ -n $(git status -s data/posted_archive.json) ]]; then
             git add data/posted_archive.json
             git commit -m "chore(archive): record published daily video [skip ci]"
-            git pull --rebase origin main
-            git push origin main
+            git pull --rebase origin main || true
+            git push origin main || true
           else
             echo "No new stories recorded in posted archive."
           fi
+
+      - name: Pipeline Failure Alert & Summary
+        if: failure()
+        run: |
+          echo "### ❌ Pipeline Execution Failed" >> $GITHUB_STEP_SUMMARY
+          echo "An error occurred during video rendering or social media distribution (YouTube / Instagram)." >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "- **Repository:** \`${{ github.repository }}\`" >> $GITHUB_STEP_SUMMARY
+          echo "- **Run Number:** \`#${{ github.run_number }}\`" >> $GITHUB_STEP_SUMMARY
+          echo "- **Triggered By:** \`${{ github.actor }}\` (\`${{ github.event_name }}\`)" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "> 💡 **Gmail Notification:** A failure notification has been automatically dispatched by GitHub to your registered Gmail address. Please inspect the log details above to review the exact API error trace." >> $GITHUB_STEP_SUMMARY

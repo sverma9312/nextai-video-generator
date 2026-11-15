@@ -22,11 +22,11 @@ export async function uploadToYouTubeShorts(
   }
 
   if (!clientId || !clientSecret || !refreshToken) {
-    console.log('ℹ️ [YouTube Upload] Missing YouTube OAuth2 credentials in .env. Skipping upload.');
+    console.error('❌ [YouTube Upload] Missing YouTube OAuth2 credentials in environment (YOUTUBE_CLIENT_ID / SECRET / REFRESH_TOKEN).');
     return {
       platform: 'youtube',
       success: false,
-      skipped: true,
+      skipped: false,
       error: 'YOUTUBE_CLIENT_ID / SECRET / REFRESH_TOKEN not set.',
     };
   }

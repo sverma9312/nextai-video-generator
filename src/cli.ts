@@ -225,6 +225,23 @@ export async function runPipeline(): Promise<void> {
       console.log(`   Instagram: FAILED (${publishResults.instagram.error})`);
     }
     console.log('====================================================\n');
+
+    const failedUploads: string[] = [];
+    if (needYouTube && !publishResults.youtube?.publishedUrl && !publishResults.youtube?.skipped) {
+      failedUploads.push(`YouTube: ${publishResults.youtube?.error || 'Failed to upload video'}`);
+    }
+    if (needInstagram && !publishResults.instagram?.publishedUrl && !publishResults.instagram?.id && !publishResults.instagram?.skipped) {
+      failedUploads.push(`Instagram: ${publishResults.instagram?.error || 'Failed to upload reel'}`);
+    }
+
+    if (failedUploads.length > 0) {
+      console.error('\n====================================================');
+      console.error('🚨 [PIPELINE FAILURE] Social distribution failed for:');
+      failedUploads.forEach((err) => console.error(`   ❌ ${err}`));
+      console.error('====================================================\n');
+      throw new Error(`Social publishing failed: ${failedUploads.join('; ')}`);
+    }
+
     return;
   }
 
@@ -369,6 +386,25 @@ export async function runPipeline(): Promise<void> {
       console.log(`   Instagram:   FAILED (${publishResults.instagram.error})`);
     }
     console.log('====================================================\n');
+
+    const isYtEnabled = process.env.ENABLE_YOUTUBE_PUBLISH === 'true';
+    const isIgEnabled = process.env.ENABLE_INSTAGRAM_PUBLISH === 'true';
+
+    const failedUploads: string[] = [];
+    if (isYtEnabled && !publishResults.youtube?.publishedUrl && !publishResults.youtube?.skipped) {
+      failedUploads.push(`YouTube: ${publishResults.youtube?.error || 'Failed to upload video'}`);
+    }
+    if (isIgEnabled && !publishResults.instagram?.publishedUrl && !publishResults.instagram?.id && !publishResults.instagram?.skipped) {
+      failedUploads.push(`Instagram: ${publishResults.instagram?.error || 'Failed to upload reel'}`);
+    }
+
+    if (failedUploads.length > 0) {
+      console.error('\n====================================================');
+      console.error('🚨 [PIPELINE FAILURE] Social distribution failed for:');
+      failedUploads.forEach((err) => console.error(`   ❌ ${err}`));
+      console.error('====================================================\n');
+      throw new Error(`Social publishing failed: ${failedUploads.join('; ')}`);
+    }
   }
 }
 
