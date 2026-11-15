@@ -150,7 +150,7 @@ jobs:
         env:
           NOTIFY_EMAIL_PASS: ${{ secrets.NOTIFY_EMAIL_PASS }}
           NOTIFY_EMAIL_USER: ${{ secrets.NOTIFY_EMAIL_USER || 'nextaiapps.team@gmail.com' }}
-          NOTIFY_EMAIL_TO: ${{ secrets.NOTIFY_EMAIL_TO || 'nextaiapps.team@gmail.com,contact@nextai-apps.com' }}
+          NOTIFY_EMAIL_TO: ${{ secrets.NOTIFY_EMAIL_TO || 'contact@nextai-apps.com' }}
           REPO_NAME: ${{ github.repository }}
           WORKFLOW_NAME: ${{ github.workflow }}
           RUN_NUMBER: ${{ github.run_number }}
@@ -169,7 +169,7 @@ jobs:
 
           sender = os.environ.get('NOTIFY_EMAIL_USER', 'nextaiapps.team@gmail.com')
           password = os.environ.get('NOTIFY_EMAIL_PASS')
-          recipients_str = os.environ.get('NOTIFY_EMAIL_TO', 'nextaiapps.team@gmail.com,contact@nextai-apps.com')
+          recipients_str = os.environ.get('NOTIFY_EMAIL_TO', 'contact@nextai-apps.com')
           recipients = [r.strip() for r in recipients_str.split(',') if r.strip()]
 
           repo = os.environ.get('REPO_NAME')
