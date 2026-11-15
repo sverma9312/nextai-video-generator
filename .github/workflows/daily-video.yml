@@ -143,4 +143,31 @@ jobs:
           echo "- **Run Number:** \`#${{ github.run_number }}\`" >> $GITHUB_STEP_SUMMARY
           echo "- **Triggered By:** \`${{ github.actor }}\` (\`${{ github.event_name }}\`)" >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
-          echo "> 💡 **Gmail Notification:** A failure notification has been automatically dispatched by GitHub to your registered Gmail address. Please inspect the log details above to review the exact API error trace." >> $GITHUB_STEP_SUMMARY
+          echo "> 💡 **Alert Dispatched:** Notification sent to designated team channels. Check logs above for exact API error traces." >> $GITHUB_STEP_SUMMARY
+
+      - name: Send Failure Notification Email to NextAI Team
+        if: failure() && secrets.NOTIFY_EMAIL_PASS != ''
+        uses: dawidd6/action-send-mail@v24
+        with:
+          server_address: smtp.gmail.com
+          server_port: 465
+          secure: true
+          username: ${{ secrets.NOTIFY_EMAIL_USER || 'nextaiapps.team@gmail.com' }}
+          password: ${{ secrets.NOTIFY_EMAIL_PASS }}
+          subject: "🚨 [${{ github.repository }}] Pipeline Failure Alert (Run #${{ github.run_number }})"
+          to: ${{ secrets.NOTIFY_EMAIL_TO || 'nextaiapps.team@gmail.com,contact@nextai-apps.com' }}
+          from: "NextAI Short Video Bot <${{ secrets.NOTIFY_EMAIL_USER || 'nextaiapps.team@gmail.com' }}>"
+          html_body: |
+            <h2>🚨 AIShort Video Pipeline Failed</h2>
+            <p>An error occurred during video rendering or social media distribution (YouTube / Instagram).</p>
+            <table border="1" cellpadding="8" cellspacing="0" style="border-collapse:collapse;border-color:#e2e8f0;font-family:sans-serif;">
+              <tr><td><strong>Repository</strong></td><td>${{ github.repository }}</td></tr>
+              <tr><td><strong>Workflow</strong></td><td>${{ github.workflow }}</td></tr>
+              <tr><td><strong>Run Number</strong></td><td>#${{ github.run_number }}</td></tr>
+              <tr><td><strong>Triggered By</strong></td><td>${{ github.actor }} (${{ github.event_name }})</td></tr>
+            </table>
+            <p style="margin-top:20px;">
+              <a href="https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}" style="background-color:#FF4820;color:white;padding:10px 16px;text-decoration:none;border-radius:6px;font-weight:bold;display:inline-block;">
+                View Failed Run & Logs in GitHub Actions
+              </a>
+            </p>
