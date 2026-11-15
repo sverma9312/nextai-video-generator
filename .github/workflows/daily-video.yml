@@ -146,28 +146,66 @@ jobs:
           echo "> 💡 **Alert Dispatched:** Notification sent to designated team channels. Check logs above for exact API error traces." >> $GITHUB_STEP_SUMMARY
 
       - name: Send Failure Notification Email to NextAI Team
-        if: failure() && secrets.NOTIFY_EMAIL_PASS != ''
-        uses: dawidd6/action-send-mail@v24
-        with:
-          server_address: smtp.gmail.com
-          server_port: 465
-          secure: true
-          username: ${{ secrets.NOTIFY_EMAIL_USER || 'nextaiapps.team@gmail.com' }}
-          password: ${{ secrets.NOTIFY_EMAIL_PASS }}
-          subject: "🚨 [${{ github.repository }}] Pipeline Failure Alert (Run #${{ github.run_number }})"
-          to: ${{ secrets.NOTIFY_EMAIL_TO || 'nextaiapps.team@gmail.com,contact@nextai-apps.com' }}
-          from: "NextAI Short Video Bot <${{ secrets.NOTIFY_EMAIL_USER || 'nextaiapps.team@gmail.com' }}>"
-          html_body: |
-            <h2>🚨 AIShort Video Pipeline Failed</h2>
-            <p>An error occurred during video rendering or social media distribution (YouTube / Instagram).</p>
-            <table border="1" cellpadding="8" cellspacing="0" style="border-collapse:collapse;border-color:#e2e8f0;font-family:sans-serif;">
-              <tr><td><strong>Repository</strong></td><td>${{ github.repository }}</td></tr>
-              <tr><td><strong>Workflow</strong></td><td>${{ github.workflow }}</td></tr>
-              <tr><td><strong>Run Number</strong></td><td>#${{ github.run_number }}</td></tr>
-              <tr><td><strong>Triggered By</strong></td><td>${{ github.actor }} (${{ github.event_name }})</td></tr>
-            </table>
-            <p style="margin-top:20px;">
-              <a href="https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}" style="background-color:#FF4820;color:white;padding:10px 16px;text-decoration:none;border-radius:6px;font-weight:bold;display:inline-block;">
-                View Failed Run & Logs in GitHub Actions
-              </a>
-            </p>
+        if: failure()
+        env:
+          NOTIFY_EMAIL_PASS: ${{ secrets.NOTIFY_EMAIL_PASS }}
+          NOTIFY_EMAIL_USER: ${{ secrets.NOTIFY_EMAIL_USER || 'nextaiapps.team@gmail.com' }}
+          NOTIFY_EMAIL_TO: ${{ secrets.NOTIFY_EMAIL_TO || 'nextaiapps.team@gmail.com,contact@nextai-apps.com' }}
+          REPO_NAME: ${{ github.repository }}
+          WORKFLOW_NAME: ${{ github.workflow }}
+          RUN_NUMBER: ${{ github.run_number }}
+          RUN_ID: ${{ github.run_id }}
+          ACTOR: ${{ github.actor }}
+          EVENT_NAME: ${{ github.event_name }}
+        run: |
+          if [ -z "$NOTIFY_EMAIL_PASS" ]; then
+            echo "ℹ️ NOTIFY_EMAIL_PASS secret is not configured. Skipping email dispatch."
+            exit 0
+          fi
+          python3 - << 'EOF'
+          import os, smtplib, ssl
+          from email.mime.text import MIMEText
+          from email.mime.multipart import MIMEMultipart
+
+          sender = os.environ.get('NOTIFY_EMAIL_USER', 'nextaiapps.team@gmail.com')
+          password = os.environ.get('NOTIFY_EMAIL_PASS')
+          recipients_str = os.environ.get('NOTIFY_EMAIL_TO', 'nextaiapps.team@gmail.com,contact@nextai-apps.com')
+          recipients = [r.strip() for r in recipients_str.split(',') if r.strip()]
+
+          repo = os.environ.get('REPO_NAME')
+          run_number = os.environ.get('RUN_NUMBER')
+          run_id = os.environ.get('RUN_ID')
+          actor = os.environ.get('ACTOR')
+          event = os.environ.get('EVENT_NAME')
+
+          msg = MIMEMultipart('alternative')
+          msg['Subject'] = f"🚨 [{repo}] Pipeline Failure Alert (Run #{run_number})"
+          msg['From'] = f"NextAI Short Video Bot <{sender}>"
+          msg['To'] = ", ".join(recipients)
+
+          html = f"""
+          <html>
+            <body style="font-family:sans-serif;color:#1e293b;padding:20px;">
+              <h2 style="color:#e11d48;">🚨 AIShort Video Pipeline Failed</h2>
+              <p>An error occurred during video rendering or social media distribution (YouTube / Instagram).</p>
+              <table border="1" cellpadding="8" cellspacing="0" style="border-collapse:collapse;border-color:#e2e8f0;">
+                <tr><td><strong>Repository</strong></td><td>{repo}</td></tr>
+                <tr><td><strong>Run Number</strong></td><td>#{run_number}</td></tr>
+                <tr><td><strong>Triggered By</strong></td><td>{actor} ({event})</td></tr>
+              </table>
+              <p style="margin-top:20px;">
+                <a href="https://github.com/{repo}/actions/runs/{run_id}" style="background-color:#FF4820;color:white;padding:10px 16px;text-decoration:none;border-radius:6px;font-weight:bold;display:inline-block;">
+                  View Failed Run & Logs in GitHub Actions
+                </a>
+              </p>
+            </body>
+          </html>
+          """
+          msg.attach(MIMEText(html, 'html'))
+
+          context = ssl.create_default_context()
+          with smtplib.SMTP_SSL("smtp.gmail.com", 465, context=context) as server:
+              server.login(sender, password)
+              server.sendmail(sender, recipients, msg.as_string())
+          print("✅ Failure email notification sent successfully to", recipients)
+          EOF
