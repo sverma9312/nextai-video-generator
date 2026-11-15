@@ -91,7 +91,7 @@ def main():
     if resend_key:
         print("📡 Attempting notification via Resend API...")
         payload = {
-            "from": "NextAI Alerts <onboarding@resend.dev>",
+            "from": "NextAI Alerts <alerts@nextai-apps.com>",
             "to": [recipient],
             "subject": subject,
             "html": html_body
