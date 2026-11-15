@@ -75,11 +75,23 @@ export async function uploadToYouTubeShorts(
       request.tags.join(' '),
     ].join('\n');
 
+    // YouTube Data API strictly forbids '<' and '>' characters in titles, descriptions, and tags.
+    // Replace angle brackets with safe Unicode characters and enforce length limits.
+    const sanitizedTitle = titleWithShorts.replace(/[<>]/g, '').slice(0, 100);
+    const sanitizedDescription = description
+      .replace(/</g, '‹')
+      .replace(/>/g, '›')
+      .slice(0, 4900);
+    const sanitizedTags = request.tags
+      .map((t) => t.replace(/[<>#]/g, '').trim())
+      .filter(Boolean)
+      .slice(0, 30);
+
     const metadata = {
       snippet: {
-        title: titleWithShorts,
-        description,
-        tags: request.tags.map((t) => t.replace(/^#/, '')),
+        title: sanitizedTitle,
+        description: sanitizedDescription,
+        tags: sanitizedTags,
         categoryId: '28', // Science & Technology
       },
       status: {
