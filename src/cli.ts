@@ -10,6 +10,31 @@ import { publishToAllChannels } from './social/publisher.js';
 import type { VideoCompositionProps } from './video/types.js';
 import type { FeedCard } from './feed/types.js';
 
+interface PlatformStatusReport {
+  status: 'PUBLISHED' | 'FAILED' | 'SKIPPED';
+  url?: string;
+  error?: string;
+}
+
+interface FailureSummaryReport {
+  topicTitle: string;
+  company?: string;
+  failedPlatforms: ('YouTube' | 'Instagram')[];
+  youtube?: PlatformStatusReport;
+  instagram?: PlatformStatusReport;
+}
+
+async function recordFailureSummary(details: FailureSummaryReport): Promise<void> {
+  try {
+    const buildDir = path.resolve(process.cwd(), 'build');
+    await fsp.mkdir(buildDir, { recursive: true });
+    const summaryPath = path.resolve(buildDir, 'failure_summary.json');
+    await fsp.writeFile(summaryPath, JSON.stringify(details, null, 2), 'utf-8');
+  } catch (err) {
+    console.warn('Could not write failure summary JSON:', err);
+  }
+}
+
 export async function runPipeline(): Promise<void> {
   const args = process.argv.slice(2);
   const isDryRun = args.includes('--dry-run') || process.env.DRY_RUN === 'true';
@@ -226,20 +251,39 @@ export async function runPipeline(): Promise<void> {
     }
     console.log('====================================================\n');
 
-    const failedUploads: string[] = [];
-    if (needYouTube && !publishResults.youtube?.publishedUrl && !publishResults.youtube?.skipped) {
-      failedUploads.push(`YouTube: ${publishResults.youtube?.error || 'Failed to upload video'}`);
+    const failedUploads: ('YouTube' | 'Instagram')[] = [];
+    const ytStatus: PlatformStatusReport = publishResults.youtube?.publishedUrl
+      ? { status: 'PUBLISHED', url: publishResults.youtube.publishedUrl }
+      : publishResults.youtube?.skipped
+      ? { status: 'SKIPPED' }
+      : { status: 'FAILED', error: publishResults.youtube?.error || 'Failed to upload video' };
+
+    const igStatus: PlatformStatusReport = (publishResults.instagram?.publishedUrl || publishResults.instagram?.id)
+      ? { status: 'PUBLISHED', url: publishResults.instagram?.publishedUrl || (publishResults.instagram?.id ? `https://instagram.com/reel/${publishResults.instagram.id}` : undefined) }
+      : publishResults.instagram?.skipped
+      ? { status: 'SKIPPED' }
+      : { status: 'FAILED', error: publishResults.instagram?.error || 'Failed to upload reel' };
+
+    if (needYouTube && ytStatus.status === 'FAILED') {
+      failedUploads.push('YouTube');
     }
-    if (needInstagram && !publishResults.instagram?.publishedUrl && !publishResults.instagram?.id && !publishResults.instagram?.skipped) {
-      failedUploads.push(`Instagram: ${publishResults.instagram?.error || 'Failed to upload reel'}`);
+    if (needInstagram && igStatus.status === 'FAILED') {
+      failedUploads.push('Instagram');
     }
 
     if (failedUploads.length > 0) {
+      await recordFailureSummary({
+        topicTitle: targetRecord.headline,
+        failedPlatforms: failedUploads,
+        youtube: ytStatus,
+        instagram: igStatus,
+      });
+
       console.error('\n====================================================');
       console.error('🚨 [PIPELINE FAILURE] Social distribution failed for:');
       failedUploads.forEach((err) => console.error(`   ❌ ${err}`));
       console.error('====================================================\n');
-      throw new Error(`Social publishing failed: ${failedUploads.join('; ')}`);
+      throw new Error(`Social publishing failed for: ${failedUploads.join(', ')}`);
     }
 
     return;
@@ -390,20 +434,40 @@ export async function runPipeline(): Promise<void> {
     const isYtEnabled = process.env.ENABLE_YOUTUBE_PUBLISH === 'true';
     const isIgEnabled = process.env.ENABLE_INSTAGRAM_PUBLISH === 'true';
 
-    const failedUploads: string[] = [];
-    if (isYtEnabled && !publishResults.youtube?.publishedUrl && !publishResults.youtube?.skipped) {
-      failedUploads.push(`YouTube: ${publishResults.youtube?.error || 'Failed to upload video'}`);
+    const failedUploads: ('YouTube' | 'Instagram')[] = [];
+    const ytStatus: PlatformStatusReport = publishResults.youtube?.publishedUrl
+      ? { status: 'PUBLISHED', url: publishResults.youtube.publishedUrl }
+      : publishResults.youtube?.skipped
+      ? { status: 'SKIPPED' }
+      : { status: 'FAILED', error: publishResults.youtube?.error || 'Failed to upload video' };
+
+    const igStatus: PlatformStatusReport = (publishResults.instagram?.publishedUrl || publishResults.instagram?.id)
+      ? { status: 'PUBLISHED', url: publishResults.instagram?.publishedUrl || (publishResults.instagram?.id ? `https://instagram.com/reel/${publishResults.instagram.id}` : undefined) }
+      : publishResults.instagram?.skipped
+      ? { status: 'SKIPPED' }
+      : { status: 'FAILED', error: publishResults.instagram?.error || 'Failed to upload reel' };
+
+    if (isYtEnabled && ytStatus.status === 'FAILED') {
+      failedUploads.push('YouTube');
     }
-    if (isIgEnabled && !publishResults.instagram?.publishedUrl && !publishResults.instagram?.id && !publishResults.instagram?.skipped) {
-      failedUploads.push(`Instagram: ${publishResults.instagram?.error || 'Failed to upload reel'}`);
+    if (isIgEnabled && igStatus.status === 'FAILED') {
+      failedUploads.push('Instagram');
     }
 
     if (failedUploads.length > 0) {
+      await recordFailureSummary({
+        topicTitle: story.headline,
+        company: story.sourceName,
+        failedPlatforms: failedUploads,
+        youtube: ytStatus,
+        instagram: igStatus,
+      });
+
       console.error('\n====================================================');
       console.error('🚨 [PIPELINE FAILURE] Social distribution failed for:');
       failedUploads.forEach((err) => console.error(`   ❌ ${err}`));
       console.error('====================================================\n');
-      throw new Error(`Social publishing failed: ${failedUploads.join('; ')}`);
+      throw new Error(`Social publishing failed for: ${failedUploads.join(', ')}`);
     }
   }
 }
