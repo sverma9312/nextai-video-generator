@@ -1,5 +1,16 @@
 [
   {
+    "storyId": "c_7afa43aaf32a2b8f",
+    "headline": "Suno introduces new Visuals feature for generating AI videos and images",
+    "videoTitle": "Suno Just Launched AI Videos! #Shorts",
+    "videoPath": "/home/runner/work/nextai-video-generator/nextai-video-generator/out/c_7afa43aaf32a2b8f.mp4",
+    "audioPath": "/home/runner/work/nextai-video-generator/nextai-video-generator/build/c_7afa43aaf32a2b8f_audio.mp3",
+    "durationSeconds": 31.15,
+    "postedAt": "2026-11-18T21:44:14.558Z",
+    "youtubeUrl": "https://youtube.com/shorts/RIsjL80sWeY",
+    "instagramUrl": "https://www.instagram.com/reel/Df5f8GigSu9/"
+  },
+  {
     "storyId": "c_755ea3c2da16f511",
     "headline": "Amazon SageMaker HyperPod Inference adds support for NVIDIA Dynamo",
     "videoTitle": "Amazon Supercharges AI Models with NVIDIA #Shorts",
