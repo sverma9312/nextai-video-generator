@@ -63,8 +63,12 @@ jobs:
 
       - name: Install system dependencies for headless video rendering
         run: |
-          sudo apt-get update
-          sudo apt-get install -y ffmpeg fonts-noto-color-emoji
+          for i in 1 2 3; do
+            echo "Attempting to update and install dependencies (attempt $i)..."
+            sudo apt-get update --fix-missing && \
+            sudo apt-get install -y --no-install-recommends --fix-missing ffmpeg fonts-noto-color-emoji && break || sleep 5
+          done || echo "Warning: apt-get encountered mirror issues. Verifying existing system ffmpeg..."
+          ffmpeg -version
 
       - name: Install Node dependencies
         run: pnpm install
