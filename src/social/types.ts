@@ -5,6 +5,8 @@ export interface SocialPublishRequest {
   tags: string[];
   topic: string;
   sourceName?: string;
+  coverImagePath?: string;
+  thumbOffsetMs?: number;
 }
 
 export interface PlatformPublishResult {

@@ -4,7 +4,7 @@ import fsp from 'node:fs/promises';
 import { selectStoryForVideo } from './feed/selector.js';
 import { generateVideoScript } from './script/generator.js';
 import { synthesizeVoiceover } from './audio/tts.js';
-import { renderVideoToDisk } from './render/renderer.js';
+import { renderVideoToDisk, renderPosterToDisk } from './render/renderer.js';
 import { getPostedArchive, recordPostedStory } from './feed/archive.js';
 import { publishToAllChannels } from './social/publisher.js';
 import type { VideoCompositionProps } from './video/types.js';
@@ -139,7 +139,7 @@ export async function runPipeline(): Promise<void> {
       return;
     }
 
-    // Check if MP4 already exists on disk
+    // Check if MP4 and cover already exist on disk
     let videoPathToPublish: string | null = null;
     const defaultOutPath = path.resolve(process.cwd(), 'out', `${targetRecord.storyId}.mp4`);
     if (fs.existsSync(defaultOutPath)) {
@@ -147,6 +147,9 @@ export async function runPipeline(): Promise<void> {
     } else if (targetRecord.videoPath && fs.existsSync(targetRecord.videoPath)) {
       videoPathToPublish = targetRecord.videoPath;
     }
+
+    const defaultCoverPath = path.resolve(process.cwd(), 'out', `${targetRecord.storyId}_cover.jpg`);
+    let coverPathToPublish: string | undefined = fs.existsSync(defaultCoverPath) ? defaultCoverPath : undefined;
 
     let story: FeedCard;
     try {
@@ -169,8 +172,35 @@ export async function runPipeline(): Promise<void> {
       console.log(`🎬 Found existing rendered video on disk: ${videoPathToPublish}`);
       console.log('   Skipping Remotion video rendering (instant dispatch)!\n');
       script = await generateVideoScript(story);
+
+      // Generate missing cover if it doesn't exist
+      if (!coverPathToPublish) {
+        try {
+          console.log(`🖼️ Rendering editorial news poster cover for retry: ${defaultCoverPath}...`);
+          await renderPosterToDisk({
+            inputProps: {
+              headline: story.headline,
+              topicKicker: script.scene2Title || `${story.category.toUpperCase()} BRIEFING`,
+              category: story.category,
+              sourceName: story.sourceName,
+              dateStr: new Date(story.publishedAt || Date.now())
+                .toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' })
+                .toUpperCase(),
+              imageUrl: story.imageUrl,
+              summaryText: story.summary,
+            },
+            outputPath: defaultCoverPath,
+          });
+          if (fs.existsSync(defaultCoverPath)) {
+            coverPathToPublish = defaultCoverPath;
+            console.log(`   Editorial cover rendered: ${coverPathToPublish}`);
+          }
+        } catch (coverErr) {
+          console.warn('⚠️ Could not generate poster cover in retry mode:', coverErr);
+        }
+      }
     } else {
-      console.log(`⚠️ Video file not found at out/${targetRecord.storyId}.mp4. Re-rendering video...`);
+      console.log(`⚠️ Video file not found at out/${targetRecord.storyId}.mp4. Re-rendering video & cover...`);
       script = await generateVideoScript(story);
       const buildDir = path.resolve(process.cwd(), 'build');
       const outAudioPath = path.resolve(buildDir, `${story.id}_audio.mp3`);
@@ -191,16 +221,22 @@ export async function runPipeline(): Promise<void> {
       const outDir = path.resolve(process.cwd(), 'out');
       await fsp.mkdir(outDir, { recursive: true });
       videoPathToPublish = path.resolve(outDir, `${story.id}.mp4`);
+      const outCoverPath = path.resolve(outDir, `${story.id}_cover.jpg`);
       await renderVideoToDisk({
         inputProps,
         outputPath: videoPathToPublish,
+        coverOutputPath: outCoverPath,
       });
+      if (fs.existsSync(outCoverPath)) {
+        coverPathToPublish = outCoverPath;
+      }
     }
 
     console.log('🚀 Distributing missing platform(s)...');
     const publishResults = await publishToAllChannels(
       {
         videoPath: videoPathToPublish,
+        coverImagePath: coverPathToPublish,
         title: targetRecord.videoTitle || script.videoTitle,
         description: script.videoDescription,
         tags: script.hashtags,
@@ -339,15 +375,17 @@ export async function runPipeline(): Promise<void> {
     return;
   }
 
-  // Step 4: Render MP4 Video via Remotion
+  // Step 4: Render MP4 Video & Editorial Cover via Remotion
   const outDir = path.resolve(process.cwd(), 'out');
   const outVideoPath = path.resolve(outDir, `${story.id}.mp4`);
+  const outCoverPath = path.resolve(outDir, `${story.id}_cover.jpg`);
 
-  console.log('🎥 [4/5] Rendering 1080x1920 9:16 vertical video via Remotion...');
+  console.log('🎥 [4/5] Rendering 1080x1920 9:16 vertical video & editorial cover via Remotion...');
   let lastProgress = 0;
   await renderVideoToDisk({
     inputProps,
     outputPath: outVideoPath,
+    coverOutputPath: outCoverPath,
     onProgress: (p) => {
       if (p >= lastProgress + 20 || p === 100) {
         console.log(`   Rendering progress: ${p}%`);
@@ -382,6 +420,7 @@ export async function runPipeline(): Promise<void> {
     console.log('\n🚀 [6/6] Distributing to social platforms...');
     const publishResults = await publishToAllChannels({
       videoPath: outVideoPath,
+      coverImagePath: fs.existsSync(outCoverPath) ? outCoverPath : undefined,
       title: script.videoTitle,
       description: script.videoDescription,
       tags: script.hashtags,

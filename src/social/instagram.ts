@@ -133,21 +133,41 @@ export async function uploadToInstagramReels(
       }
     }
 
+    // Upload custom editorial cover image if available
+    let coverUrl: string | undefined;
+    if (request.coverImagePath) {
+      try {
+        console.log(`📸 [Instagram Upload] Uploading editorial cover thumbnail to ephemeral CDN (${request.coverImagePath})...`);
+        coverUrl = await uploadToEphemeralCdn(request.coverImagePath);
+        console.log(`✅ [Instagram Upload] Cover thumbnail uploaded successfully: ${coverUrl}`);
+      } catch (coverErr: any) {
+        console.warn(`⚠️ [Instagram Upload] Cover thumbnail upload failed: ${coverErr.message}. Falling back to thumb_offset.`);
+      }
+    }
+
+    const thumbOffset = request.thumbOffsetMs ?? 2500;
+
     let containerId: string;
 
     if (videoUrl) {
       // Method A: Ingest via publicly reachable URL (100% reliable on Meta)
       console.log(`📸 [Instagram Upload] Creating Reels container via public URL (${videoUrl})...`);
       const containerUrl = `https://graph.facebook.com/v19.0/${accountId}/media`;
+      const payload: Record<string, any> = {
+        media_type: 'REELS',
+        video_url: videoUrl,
+        caption,
+        thumb_offset: thumbOffset,
+        access_token: accessToken,
+      };
+      if (coverUrl) {
+        payload.cover_url = coverUrl;
+      }
+
       const containerRes = await fetch(containerUrl, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          media_type: 'REELS',
-          video_url: videoUrl,
-          caption,
-          access_token: accessToken,
-        }),
+        body: JSON.stringify(payload),
       });
 
       if (!containerRes.ok) {
@@ -164,15 +184,21 @@ export async function uploadToInstagramReels(
       const fileSize = stat.size;
 
       const initUrl = `https://graph.facebook.com/v19.0/${accountId}/media`;
+      const initPayload: Record<string, any> = {
+        media_type: 'REELS',
+        upload_type: 'resumable',
+        caption,
+        thumb_offset: thumbOffset,
+        access_token: accessToken,
+      };
+      if (coverUrl) {
+        initPayload.cover_url = coverUrl;
+      }
+
       const initRes = await fetch(initUrl, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          media_type: 'REELS',
-          upload_type: 'resumable',
-          caption,
-          access_token: accessToken,
-        }),
+        body: JSON.stringify(initPayload),
       });
 
       if (!initRes.ok) {

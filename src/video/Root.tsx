@@ -2,12 +2,23 @@ import React from 'react';
 import { Composition, Still, registerRoot } from 'remotion';
 import { MainComposition } from './Composition';
 import type { VideoCompositionProps } from './types';
+import { NewsPoster, type NewsPosterProps } from './components/NewsPoster';
 import {
   Option1Velocity,
   Option2Editorial,
   Option3Prism,
   Option4Minimalist,
 } from '../branding/Avatars';
+
+const defaultPosterProps: NewsPosterProps = {
+  headline: 'AlphaGenome 2 predicts DNA variant effects in individual cell types',
+  topicKicker: 'AI BREAKTHROUGH',
+  category: 'MODELS',
+  sourceName: 'Google DeepMind',
+  dateStr: 'NOV 20, 2026',
+  imageUrl: 'https://lh3.googleusercontent.com/VPOhADdGu1T7kK_gWBiGzyVawQbKCjpL3-B0L0wxpYCyr8cHxviYmo9Hghy4f1laeIo2YKwuz8E07TR9HWWk2b0EONi0uvju-8TDLHX6YWHG4dXe3w=w528-h297-n-nu-rw-lo',
+  summaryText: 'Google DeepMind announced AlphaGenome 2, predicting DNA variant effects in single human cell types.',
+};
 
 const defaultTestProps: VideoCompositionProps = {
   story: {
@@ -60,6 +71,13 @@ export const RemotionRoot: React.FC = () => {
         width={1080}
         height={1920}
         defaultProps={defaultTestProps}
+      />
+      <Still
+        id="NewsPoster"
+        component={NewsPoster}
+        width={1080}
+        height={1920}
+        defaultProps={defaultPosterProps}
       />
       <Still
         id="AvatarOption1Velocity"

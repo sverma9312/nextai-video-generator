@@ -83,6 +83,7 @@ jobs:
             echo "Downloading artifacts from run #$PREV_RUN_ID..."
             gh run download "$PREV_RUN_ID" --dir ./downloaded_artifacts || true
             find ./downloaded_artifacts -name "*.mp4" -exec cp {} out/ \; || true
+            find ./downloaded_artifacts -name "*_cover.jpg" -exec cp {} out/ \; || true
             find ./downloaded_artifacts -name "*_audio.mp3" -exec cp {} build/ \; || true
             find ./downloaded_artifacts -name "*_subtitles.json" -exec cp {} build/ \; || true
             rm -rf ./downloaded_artifacts
@@ -118,6 +119,7 @@ jobs:
           name: daily-vertical-video-${{ github.run_number }}
           path: |
             out/*.mp4
+            out/*_cover.jpg
             build/*_audio.mp3
             build/*_subtitles.json
           if-no-files-found: ignore
