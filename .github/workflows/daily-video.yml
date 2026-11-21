@@ -2,7 +2,7 @@ name: Daily Video Generator (Shorts & Reels)
 
 on:
   schedule:
-    # Runs twice daily: 04:00 UTC (09:30 AM IST) & 14:00 UTC (07:30 PM IST)
+    # Runs at 04:17 UTC (9:47 AM IST) and 14:23 UTC (7:53 PM IST)
     - cron: '17 4 * * *'
     - cron: '23 14 * * *'
   workflow_dispatch:
