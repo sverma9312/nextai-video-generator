@@ -1,5 +1,16 @@
 [
   {
+    "storyId": "c_feadc47ce74b6539",
+    "headline": "AWS Quick Updates Bring New Workflows and Multi Agent Orchestration",
+    "videoTitle": "AWS Unveils Multi-Agent Automation! #Shorts",
+    "videoPath": "/home/runner/work/nextai-video-generator/nextai-video-generator/out/c_feadc47ce74b6539.mp4",
+    "audioPath": "/home/runner/work/nextai-video-generator/nextai-video-generator/build/c_feadc47ce74b6539_audio.mp3",
+    "durationSeconds": 33.58,
+    "postedAt": "2026-11-21T11:58:49.076Z",
+    "youtubeUrl": "https://youtube.com/shorts/zjow-crwUrA",
+    "instagramUrl": "https://www.instagram.com/reel/DgALUKvgsY_/"
+  },
+  {
     "storyId": "c_4d69982c7f58d236",
     "headline": "Amazon SageMaker HyperPod adds enhanced infrastructure observability for GPU training",
     "videoTitle": "AWS Upgrades SageMaker HyperPod #Shorts",
