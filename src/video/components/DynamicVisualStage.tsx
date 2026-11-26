@@ -182,6 +182,16 @@ export const DynamicVisualStage: React.FC<DynamicVisualStageProps> = ({ story, s
     rolloutStage: script.scene3Ui?.rolloutStage || 'Production Rollout',
   };
 
+  const scene2Explanation =
+    script.corePoints && script.corePoints.length > 0 && script.corePoints[0]
+      ? script.corePoints[0]
+      : story.summary || story.headline;
+
+  const scene3Explanation =
+    script.corePoints && script.corePoints.length > 1 && script.corePoints[1]
+      ? script.corePoints[1]
+      : (script.corePoints && script.corePoints[0]) || story.summary || story.headline;
+
   return (
     <div
       style={{
@@ -450,26 +460,39 @@ export const DynamicVisualStage: React.FC<DynamicVisualStageProps> = ({ story, s
               width: 960,
               height: 520,
               borderRadius: 32,
-              backgroundColor: '#0c0f1a',
+              backgroundColor: '#0c111e',
               border: '1.5px solid rgba(56, 189, 248, 0.45)',
-              boxShadow: '0 25px 60px rgba(0, 0, 0, 0.8), 0 0 40px rgba(56, 189, 248, 0.2)',
+              boxShadow: '0 25px 60px rgba(0, 0, 0, 0.85), 0 0 45px rgba(56, 189, 248, 0.22)',
               overflow: 'hidden',
               display: 'flex',
               flexDirection: 'column',
               boxSizing: 'border-box',
             }}
           >
-            {/* Ambient Background Gradient Glow */}
+            {/* Ambient Blurred Background from Story Image */}
+            {story.imageUrl && (
+              <Img
+                src={story.imageUrl}
+                style={{
+                  position: 'absolute',
+                  inset: -30,
+                  width: 'calc(100% + 60px)',
+                  height: 'calc(100% + 60px)',
+                  objectFit: 'cover',
+                  filter: 'blur(30px) brightness(0.55) saturate(2.2)',
+                  opacity: 0.78,
+                }}
+              />
+            )}
+
+            {/* Radiant Dark Sapphire Glassmorphic Overlay */}
             <div
               style={{
                 position: 'absolute',
-                top: -80,
-                right: -80,
-                width: 360,
-                height: 360,
-                borderRadius: '50%',
-                background: 'radial-gradient(circle, rgba(56, 189, 248, 0.18) 0%, transparent 70%)',
-                filter: 'blur(45px)',
+                inset: 0,
+                background:
+                  'radial-gradient(circle at 50% 30%, rgba(14, 165, 233, 0.38) 0%, rgba(12, 74, 110, 0.25) 50%, rgba(10, 15, 30, 0.85) 100%)',
+                backdropFilter: 'blur(14px)',
               }}
             />
 
@@ -487,8 +510,9 @@ export const DynamicVisualStage: React.FC<DynamicVisualStageProps> = ({ story, s
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'space-between',
-                borderBottom: '1px solid rgba(255, 255, 255, 0.08)',
-                backgroundColor: 'rgba(255, 255, 255, 0.02)',
+                borderBottom: '1px solid rgba(255, 255, 255, 0.1)',
+                backgroundColor: 'rgba(15, 23, 42, 0.65)',
+                backdropFilter: 'blur(12px)',
                 zIndex: 20,
               }}
             >
@@ -505,10 +529,10 @@ export const DynamicVisualStage: React.FC<DynamicVisualStageProps> = ({ story, s
                   display: 'flex',
                   alignItems: 'center',
                   gap: 8,
-                  padding: '6px 16px',
+                  padding: '6px 18px',
                   borderRadius: 9999,
-                  backgroundColor: 'rgba(56, 189, 248, 0.12)',
-                  border: '1px solid rgba(56, 189, 248, 0.3)',
+                  backgroundColor: 'rgba(56, 189, 248, 0.15)',
+                  border: '1px solid rgba(56, 189, 248, 0.35)',
                   color: '#38bdf8',
                   fontSize: 15,
                   fontWeight: 700,
@@ -540,82 +564,104 @@ export const DynamicVisualStage: React.FC<DynamicVisualStageProps> = ({ story, s
             <div
               style={{
                 flex: 1,
-                padding: '24px 32px',
+                padding: '20px 32px 24px',
                 display: 'flex',
                 flexDirection: 'column',
                 justifyContent: 'space-between',
+                alignItems: 'center',
                 zIndex: 20,
               }}
             >
-              {/* Agent Command & Action Stream */}
+              {/* Section 1 (Top): Agent Action & Category Bar */}
               <div
                 style={{
-                  padding: '20px 24px',
-                  borderRadius: 20,
-                  backgroundColor: 'rgba(15, 23, 42, 0.75)',
-                  border: '1px solid rgba(56, 189, 248, 0.25)',
+                  width: '100%',
+                  maxWidth: 880,
+                  padding: '12px 22px',
+                  borderRadius: 18,
+                  backgroundColor: 'rgba(15, 23, 42, 0.7)',
+                  border: '1px solid rgba(56, 189, 248, 0.35)',
+                  backdropFilter: 'blur(12px)',
                   display: 'flex',
-                  flexDirection: 'column',
-                  gap: 14,
+                  alignItems: 'center',
+                  justifyContent: 'space-between',
+                  boxShadow: '0 4px 16px rgba(0, 0, 0, 0.4)',
                 }}
               >
-                {/* Agent Header */}
-                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-                    <div
-                      style={{
-                        width: 36,
-                        height: 36,
-                        borderRadius: 10,
-                        backgroundColor: 'rgba(56, 189, 248, 0.2)',
-                        display: 'flex',
-                        alignItems: 'center',
-                        justifyContent: 'center',
-                        fontSize: 18,
-                      }}
-                    >
-                      🤖
-                    </div>
-                    <div>
-                      <div style={{ fontSize: 13, color: '#94a3b8', fontWeight: 600 }}>AUTONOMOUS AGENT RUNTIME</div>
-                      <div style={{ fontSize: 17, color: '#f1f5f9', fontWeight: 800 }}>{scene2CategoryTag}</div>
-                    </div>
-                  </div>
-
-                  <div
-                    style={{
-                      padding: '4px 12px',
-                      borderRadius: 8,
-                      backgroundColor: 'rgba(16, 185, 129, 0.15)',
-                      border: '1px solid rgba(16, 185, 129, 0.3)',
-                      color: '#10b981',
-                      fontSize: 12,
-                      fontWeight: 800,
-                    }}
-                  >
-                    VERIFIED SECURE
-                  </div>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+                  <span style={{ fontSize: 20 }}>⚡</span>
+                  <span style={{ fontSize: 13, color: '#38bdf8', fontWeight: 800, letterSpacing: '0.12em', textTransform: 'uppercase' }}>
+                    {scene2CategoryTag}
+                  </span>
                 </div>
-
-                {/* Simulated Action Prompt */}
                 <div
                   style={{
-                    padding: '12px 18px',
-                    borderRadius: 14,
-                    backgroundColor: 'rgba(0, 0, 0, 0.4)',
-                    border: '1px solid rgba(255, 255, 255, 0.08)',
+                    padding: '5px 16px',
+                    borderRadius: 9999,
+                    backgroundColor: 'rgba(56, 189, 248, 0.16)',
+                    border: '1px solid rgba(56, 189, 248, 0.4)',
+                    color: '#e0f2fe',
+                    fontSize: 14,
+                    fontWeight: 700,
                     display: 'flex',
                     alignItems: 'center',
-                    gap: 12,
+                    gap: 8,
                   }}
                 >
-                  <span style={{ color: '#38bdf8', fontSize: 20, fontWeight: 800 }}>&gt;</span>
-                  <span style={{ color: '#e2e8f0', fontSize: 18, fontWeight: 700 }}>{scene2Ui.agentAction}</span>
+                  <span style={{ width: 7, height: 7, borderRadius: '50%', backgroundColor: '#38bdf8', boxShadow: '0 0 8px #38bdf8' }} />
+                  {scene2Ui.agentAction}
                 </div>
               </div>
 
-              {/* Feature Highlight Metric Pills */}
-              <div style={{ display: 'flex', gap: 16 }}>
+              {/* Section 2 (Center Hero): High-Retention Visual Feature Breakdown Card */}
+              <div
+                style={{
+                  display: 'flex',
+                  flexDirection: 'column',
+                  alignItems: 'center',
+                  textAlign: 'center',
+                  gap: 10,
+                  maxWidth: 880,
+                  width: '100%',
+                  padding: '16px 24px',
+                  borderRadius: 22,
+                  backgroundColor: 'rgba(15, 23, 42, 0.65)',
+                  border: '1px solid rgba(56, 189, 248, 0.28)',
+                  backdropFilter: 'blur(12px)',
+                  boxShadow: '0 8px 30px rgba(0, 0, 0, 0.4), inset 0 0 25px rgba(56, 189, 248, 0.1)',
+                }}
+              >
+                <div
+                  style={{
+                    fontSize: 12,
+                    fontWeight: 800,
+                    letterSpacing: '0.14em',
+                    color: '#38bdf8',
+                    textTransform: 'uppercase',
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: 6,
+                  }}
+                >
+                  <span>✨</span> CORE BREAKTHROUGH
+                </div>
+                <div
+                  style={{
+                    color: '#ffffff',
+                    fontSize: 29,
+                    fontWeight: 800,
+                    lineHeight: 1.35,
+                    textAlign: 'center',
+                    textShadow: '0 2px 16px rgba(0, 0, 0, 0.95), 0 0 25px rgba(56, 189, 248, 0.3)',
+                    letterSpacing: '-0.01em',
+                  }}
+                >
+                  {scene2Explanation}
+                </div>
+              </div>
+
+              {/* Section 3 (Bottom): Feature Highlight Metric Pills (Center Aligned) */}
+              <div style={{ display: 'flex', gap: 16, width: '100%', maxWidth: 880 }}>
                 {scene2Badges.map((badge, idx) => (
                   <div
                     key={idx}
@@ -623,11 +669,14 @@ export const DynamicVisualStage: React.FC<DynamicVisualStageProps> = ({ story, s
                       flex: 1,
                       padding: '14px 20px',
                       borderRadius: 18,
-                      backgroundColor: 'rgba(255, 255, 255, 0.04)',
-                      border: '1px solid rgba(255, 255, 255, 0.1)',
+                      backgroundColor: 'rgba(15, 23, 42, 0.75)',
+                      border: '1px solid rgba(255, 255, 255, 0.12)',
+                      backdropFilter: 'blur(12px)',
                       display: 'flex',
                       alignItems: 'center',
+                      justifyContent: 'center',
                       gap: 14,
+                      boxShadow: '0 6px 20px rgba(0, 0, 0, 0.4)',
                     }}
                   >
                     <div
@@ -637,6 +686,7 @@ export const DynamicVisualStage: React.FC<DynamicVisualStageProps> = ({ story, s
                         height: 44,
                         borderRadius: 12,
                         backgroundColor: `${badge.color}26`,
+                        border: `1px solid ${badge.color}40`,
                         display: 'flex',
                         alignItems: 'center',
                         justifyContent: 'center',
@@ -644,8 +694,8 @@ export const DynamicVisualStage: React.FC<DynamicVisualStageProps> = ({ story, s
                     >
                       {badge.icon}
                     </div>
-                    <div>
-                      <div style={{ fontSize: 12, color: '#94a3b8', fontWeight: 600, letterSpacing: '0.08em' }}>
+                    <div style={{ textAlign: 'left' }}>
+                      <div style={{ fontSize: 12, color: '#94a3b8', fontWeight: 700, letterSpacing: '0.08em' }}>
                         {badge.label}
                       </div>
                       <div style={{ fontSize: 18, color: '#ffffff', fontWeight: 800 }}>
@@ -658,7 +708,7 @@ export const DynamicVisualStage: React.FC<DynamicVisualStageProps> = ({ story, s
             </div>
           </div>
 
-          {/* Headline Below App Container (Punchy 3-5 words, no narration repetition!) */}
+          {/* Headline Below App Container */}
           <div
             style={{
               color: '#ffffff',
@@ -695,26 +745,39 @@ export const DynamicVisualStage: React.FC<DynamicVisualStageProps> = ({ story, s
               width: 960,
               height: 520,
               borderRadius: 32,
-              backgroundColor: '#0e0d1a',
+              backgroundColor: '#140c22',
               border: '1.5px solid rgba(168, 85, 247, 0.45)',
-              boxShadow: '0 25px 60px rgba(0, 0, 0, 0.8), 0 0 40px rgba(168, 85, 247, 0.2)',
+              boxShadow: '0 25px 60px rgba(0, 0, 0, 0.85), 0 0 45px rgba(168, 85, 247, 0.22)',
               overflow: 'hidden',
               display: 'flex',
               flexDirection: 'column',
               boxSizing: 'border-box',
             }}
           >
-            {/* Ambient Background Violet Glow */}
+            {/* Ambient Blurred Background from Story Image */}
+            {story.imageUrl && (
+              <Img
+                src={story.imageUrl}
+                style={{
+                  position: 'absolute',
+                  inset: -30,
+                  width: 'calc(100% + 60px)',
+                  height: 'calc(100% + 60px)',
+                  objectFit: 'cover',
+                  filter: 'blur(30px) brightness(0.55) saturate(2.2)',
+                  opacity: 0.78,
+                }}
+              />
+            )}
+
+            {/* Radiant Dark Violet Glassmorphic Overlay */}
             <div
               style={{
                 position: 'absolute',
-                bottom: -80,
-                left: -80,
-                width: 360,
-                height: 360,
-                borderRadius: '50%',
-                background: 'radial-gradient(circle, rgba(168, 85, 247, 0.22) 0%, transparent 70%)',
-                filter: 'blur(45px)',
+                inset: 0,
+                background:
+                  'radial-gradient(circle at 50% 30%, rgba(168, 85, 247, 0.40) 0%, rgba(109, 40, 217, 0.25) 50%, rgba(18, 10, 32, 0.85) 100%)',
+                backdropFilter: 'blur(14px)',
               }}
             />
 
@@ -732,8 +795,9 @@ export const DynamicVisualStage: React.FC<DynamicVisualStageProps> = ({ story, s
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'space-between',
-                borderBottom: '1px solid rgba(255, 255, 255, 0.08)',
-                backgroundColor: 'rgba(255, 255, 255, 0.02)',
+                borderBottom: '1px solid rgba(255, 255, 255, 0.1)',
+                backgroundColor: 'rgba(26, 16, 46, 0.65)',
+                backdropFilter: 'blur(12px)',
                 zIndex: 20,
               }}
             >
@@ -750,11 +814,11 @@ export const DynamicVisualStage: React.FC<DynamicVisualStageProps> = ({ story, s
                   display: 'flex',
                   alignItems: 'center',
                   gap: 8,
-                  padding: '6px 16px',
+                  padding: '6px 18px',
                   borderRadius: 9999,
-                  backgroundColor: 'rgba(168, 85, 247, 0.12)',
-                  border: '1px solid rgba(168, 85, 247, 0.3)',
-                  color: '#a855f7',
+                  backgroundColor: 'rgba(168, 85, 247, 0.15)',
+                  border: '1px solid rgba(168, 85, 247, 0.35)',
+                  color: '#c084fc',
                   fontSize: 15,
                   fontWeight: 700,
                   letterSpacing: '0.04em',
@@ -785,45 +849,48 @@ export const DynamicVisualStage: React.FC<DynamicVisualStageProps> = ({ story, s
             <div
               style={{
                 flex: 1,
-                padding: '24px 32px',
+                padding: '20px 32px 24px',
                 display: 'flex',
                 flexDirection: 'column',
                 justifyContent: 'space-between',
+                alignItems: 'center',
                 zIndex: 20,
               }}
             >
-              {/* 2 Big Visual Hero Metric Cards */}
-              <div style={{ display: 'flex', gap: 20 }}>
+              {/* 2 Big Visual Hero Metric Cards (Center Aligned) */}
+              <div style={{ display: 'flex', gap: 16, width: '100%', maxWidth: 880 }}>
                 {/* Metric Card 1 */}
                 <div
                   style={{
                     flex: 1,
-                    padding: '20px 24px',
+                    padding: '16px 20px',
                     borderRadius: 20,
-                    backgroundColor: 'rgba(168, 85, 247, 0.08)',
-                    border: '1px solid rgba(168, 85, 247, 0.25)',
+                    backgroundColor: 'rgba(26, 16, 46, 0.8)',
+                    border: '1px solid rgba(168, 85, 247, 0.35)',
+                    backdropFilter: 'blur(12px)',
                     display: 'flex',
                     flexDirection: 'column',
                     justifyContent: 'center',
                     alignItems: 'center',
                     textAlign: 'center',
-                    gap: 6,
+                    gap: 4,
+                    boxShadow: '0 6px 20px rgba(0, 0, 0, 0.4)',
                   }}
                 >
                   <div
                     style={{
-                      fontSize: 48,
+                      fontSize: 44,
                       fontWeight: 900,
                       letterSpacing: '-0.02em',
-                      background: 'linear-gradient(135deg, #a855f7 0%, #38bdf8 100%)',
+                      background: 'linear-gradient(135deg, #c084fc 0%, #38bdf8 100%)',
                       WebkitBackgroundClip: 'text',
                       WebkitTextFillColor: 'transparent',
                     }}
                   >
-                    {scene3Ui.metricValue}
+                    {scene3Ui.metricValue || '100%'}
                   </div>
-                  <div style={{ fontSize: 14, color: '#cbd5e1', fontWeight: 700, letterSpacing: '0.08em', textTransform: 'uppercase' }}>
-                    {scene3Ui.metricLabel}
+                  <div style={{ fontSize: 13, color: '#cbd5e1', fontWeight: 700, letterSpacing: '0.08em', textTransform: 'uppercase' }}>
+                    {scene3Ui.metricLabel || 'Protected & Verified'}
                   </div>
                 </div>
 
@@ -831,21 +898,23 @@ export const DynamicVisualStage: React.FC<DynamicVisualStageProps> = ({ story, s
                 <div
                   style={{
                     flex: 1,
-                    padding: '20px 24px',
+                    padding: '16px 20px',
                     borderRadius: 20,
-                    backgroundColor: 'rgba(56, 189, 248, 0.08)',
-                    border: '1px solid rgba(56, 189, 248, 0.25)',
+                    backgroundColor: 'rgba(16, 32, 28, 0.8)',
+                    border: '1px solid rgba(16, 185, 129, 0.35)',
+                    backdropFilter: 'blur(12px)',
                     display: 'flex',
                     flexDirection: 'column',
                     justifyContent: 'center',
                     alignItems: 'center',
                     textAlign: 'center',
-                    gap: 6,
+                    gap: 4,
+                    boxShadow: '0 6px 20px rgba(0, 0, 0, 0.4)',
                   }}
                 >
                   <div
                     style={{
-                      fontSize: 42,
+                      fontSize: 38,
                       fontWeight: 900,
                       letterSpacing: '-0.02em',
                       color: '#10b981',
@@ -856,27 +925,76 @@ export const DynamicVisualStage: React.FC<DynamicVisualStageProps> = ({ story, s
                   >
                     <span>⚡</span> READY
                   </div>
-                  <div style={{ fontSize: 14, color: '#cbd5e1', fontWeight: 700, letterSpacing: '0.08em', textTransform: 'uppercase' }}>
-                    {scene3Ui.rolloutStage}
+                  <div style={{ fontSize: 13, color: '#cbd5e1', fontWeight: 700, letterSpacing: '0.08em', textTransform: 'uppercase' }}>
+                    {scene3Ui.rolloutStage || 'Global Availability'}
                   </div>
                 </div>
               </div>
 
-              {/* 3 Key Takeaway Badges */}
-              <div style={{ display: 'flex', gap: 14 }}>
+              {/* Center Impact Explanation Card (Hero Focal Point) */}
+              <div
+                style={{
+                  display: 'flex',
+                  flexDirection: 'column',
+                  alignItems: 'center',
+                  textAlign: 'center',
+                  gap: 10,
+                  maxWidth: 880,
+                  width: '100%',
+                  padding: '16px 24px',
+                  borderRadius: 22,
+                  backgroundColor: 'rgba(26, 16, 46, 0.65)',
+                  border: '1px solid rgba(168, 85, 247, 0.28)',
+                  backdropFilter: 'blur(12px)',
+                  boxShadow: '0 8px 30px rgba(0, 0, 0, 0.4), inset 0 0 25px rgba(168, 85, 247, 0.1)',
+                }}
+              >
+                <div
+                  style={{
+                    fontSize: 12,
+                    color: '#c084fc',
+                    fontWeight: 800,
+                    letterSpacing: '0.14em',
+                    textTransform: 'uppercase',
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: 6,
+                  }}
+                >
+                  <span>🎯</span> REAL-WORLD IMPACT &amp; SCALE
+                </div>
+                <div
+                  style={{
+                    color: '#ffffff',
+                    fontSize: 28,
+                    fontWeight: 800,
+                    lineHeight: 1.35,
+                    textAlign: 'center',
+                    textShadow: '0 2px 16px rgba(0, 0, 0, 0.95), 0 0 25px rgba(168, 85, 247, 0.3)',
+                    letterSpacing: '-0.01em',
+                  }}
+                >
+                  {scene3Explanation}
+                </div>
+              </div>
+
+              {/* 3 Key Takeaway Badges (Center Aligned) */}
+              <div style={{ display: 'flex', gap: 14, width: '100%', maxWidth: 880 }}>
                 {scene3Tags.map((badge, i) => (
                   <div
                     key={i}
                     style={{
                       flex: 1,
-                      padding: '12px 14px',
+                      padding: '12px 16px',
                       borderRadius: 16,
-                      backgroundColor: 'rgba(255, 255, 255, 0.04)',
-                      border: '1px solid rgba(255, 255, 255, 0.1)',
+                      backgroundColor: 'rgba(26, 16, 46, 0.75)',
+                      border: '1px solid rgba(255, 255, 255, 0.12)',
+                      backdropFilter: 'blur(12px)',
                       display: 'flex',
                       alignItems: 'center',
                       justifyContent: 'center',
                       gap: 10,
+                      boxShadow: '0 4px 16px rgba(0, 0, 0, 0.4)',
                     }}
                   >
                     <span style={{ fontSize: 20 }}>{badge.icon}</span>
@@ -887,7 +1005,7 @@ export const DynamicVisualStage: React.FC<DynamicVisualStageProps> = ({ story, s
             </div>
           </div>
 
-          {/* Headline Below App Container (Punchy 3-5 words, no narration repetition!) */}
+          {/* Headline Below App Container */}
           <div
             style={{
               color: '#ffffff',
